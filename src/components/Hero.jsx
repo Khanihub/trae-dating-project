@@ -1,21 +1,21 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
-
+import intro from "../../public/intro.mp4"
 function Hero() {
   const videoRef = useRef(null)
 
   useEffect(() => {
-    // Ensure video plays
+    
     if (videoRef.current) {
       videoRef.current.play().catch(() => {
-        // Handle autoplay restrictions
+      
       })
     }
   }, [])
 
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Video */}
+      
       <video
         ref={videoRef}
         autoPlay
@@ -24,8 +24,8 @@ function Hero() {
         playsInline
         className="absolute top-0 left-0 w-full h-full object-cover z-0 scale-110"
       >
-        <source src="/hero-video.mp4" type="video/mp4" />
-        <source src="/hero-video.webm" type="video/webm" />
+        <source src={intro} type="video/mp4" />
+        <source src={intro} type="video/webm" />
       </video>
       
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary-900/90 via-primary-700/85 to-primary-600/90 z-10"></div>
