@@ -42,7 +42,7 @@ function Hero() {
         <div className="text-center animate-fade-in-up">
           <div className="inline-block mb-6">
             <span className="px-4 py-2 bg-white/20 backdrop-blur-md rounded-full text-sm font-semibold border border-white/30">
-              ✨ Trusted by 100,000+ Members Worldwide
+               Trusted by 100,000+ Members Worldwide
             </span>
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">

@@ -5,6 +5,7 @@ import Register from './pages/Register'
 import Testimonials from './pages/Testimonials'
 import Contact from './pages/Contact'
 import MuslimDating from './pages/MuslimDating'
+import Dashboard from './pages/Dashboard'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/testimonials" element={<Testimonials />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/muslim-dating" element={<MuslimDating />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   )
