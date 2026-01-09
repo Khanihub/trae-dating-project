@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 function Footer() {
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-900 to-black text-gray-300 relative overflow-hidden">
-      {/* Background Pattern */}
+      
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v22H20v-2zm0 0v2H0v-2h20z'/%3E%3C/g%3E%3C/svg%3E")`,
@@ -12,7 +12,7 @@ function Footer() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-          {/* Brand */}
+       
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-3xl font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent mb-6">
               Mashallah
@@ -52,7 +52,7 @@ function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          
           <div>
             <h4 className="text-white font-bold mb-6 text-lg">Quick Links</h4>
             <ul className="space-y-3">
@@ -82,8 +82,6 @@ function Footer() {
               </li>
             </ul>
           </div>
-
-          {/* Support */}
           <div>
             <h4 className="text-white font-bold mb-6 text-lg">Support</h4>
             <ul className="space-y-3">

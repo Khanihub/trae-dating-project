@@ -28,16 +28,13 @@ function Hero() {
         <source src="/hero-video.webm" type="video/webm" />
       </video>
       
-      {/* Gradient Overlay */}
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary-900/90 via-primary-700/85 to-primary-600/90 z-10"></div>
       
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 z-10">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400/20 rounded-full blur-3xl animate-float"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
       </div>
       
-      {/* Content */}
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 text-white">
         <div className="text-center animate-fade-in-up">
           <div className="inline-block mb-6">
@@ -94,7 +91,6 @@ function Hero() {
         </div>
       </div>
       
-      {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />

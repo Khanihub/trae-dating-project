@@ -25,7 +25,7 @@ function Testimonials() {
 
   return (
     <section className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
-      {/* Background Decoration */}
+      
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary-200/20 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-300/20 rounded-full blur-3xl"></div>
       
@@ -50,22 +50,19 @@ function Testimonials() {
               key={index}
               className="group bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 relative overflow-hidden"
             >
-              {/* Quote Icon */}
+              
               <div className="absolute top-4 right-4 text-primary-200 text-6xl font-serif">"</div>
               
-              {/* Avatar */}
               <div className="flex justify-center mb-6">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-4xl transform group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   {testimonial.image}
                 </div>
               </div>
               
-              {/* Quote */}
               <p className="text-gray-700 mb-6 italic text-center leading-relaxed relative z-10 text-lg">
                 {testimonial.text}
               </p>
               
-              {/* Stars */}
               <div className="flex justify-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
@@ -74,14 +71,12 @@ function Testimonials() {
                 ))}
               </div>
               
-              {/* Name and Location */}
               <div className="text-center border-t pt-4">
                 <p className="font-bold text-gray-900 text-lg">{testimonial.name}</p>
                 <p className="text-sm text-gray-500 mt-1">{testimonial.location}</p>
                 <p className="text-xs text-primary-600 font-semibold mt-2">{testimonial.date}</p>
               </div>
               
-              {/* Hover Effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
           ))}

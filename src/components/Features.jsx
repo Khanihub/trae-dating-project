@@ -92,10 +92,9 @@ function Features() {
               key={index}
               className="group bg-white p-8 rounded-2xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 hover:border-primary-200 relative overflow-hidden"
             >
-              {/* Gradient Background on Hover */}
+
               <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
               
-              {/* Icon */}
               <div className={`relative mb-6 inline-flex p-4 rounded-xl bg-gradient-to-br ${feature.color} text-white transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                 {feature.icon}
               </div>
@@ -107,7 +106,6 @@ function Features() {
                 {feature.description}
               </p>
               
-              {/* Decorative Element */}
               <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
           ))}

@@ -12,7 +12,6 @@ function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Handle contact form submission
     console.log('Contact form:', formData)
   }
 
