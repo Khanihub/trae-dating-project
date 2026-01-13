@@ -26,12 +26,15 @@ function Login() {
     setError('')
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        `${import.meta.env.VITE_API}/api/auth/login`,
         {
           email: formData.email,
-          password: formData.password,
+          password: formData.password
         }
-      )
+      );
+      console.log(formData);
+
+
       localStorage.setItem('token', res.data.token)
       navigate('/dashboard')
     } catch (err) {

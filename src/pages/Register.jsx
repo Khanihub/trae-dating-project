@@ -34,7 +34,7 @@ function Register() {
 
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/register`,
+        `${import.meta.env.VITE_API}/api/auth/register`, 
         {
           name: formData.name,
           email: formData.email,
@@ -55,7 +55,7 @@ function Register() {
 
       <div className="flex-grow flex items-center justify-center">
         <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
-          
+
           {error && (
             <p className="text-red-500 text-sm text-center">{error}</p>
           )}
