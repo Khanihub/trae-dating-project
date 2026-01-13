@@ -51,7 +51,7 @@ function Register() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      {/* <Navbar /> */}
 
       <div className="flex-grow flex items-center justify-center">
         <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">

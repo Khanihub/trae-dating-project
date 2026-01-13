@@ -6,7 +6,7 @@ import Features from '../components/Features'
 function MuslimDating() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {/* <Navbar /> */}
       <Hero />
       <Features />
       <Footer />

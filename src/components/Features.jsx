@@ -94,18 +94,18 @@ function Features() {
             >
 
               <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
-              
+
               <div className={`relative mb-6 inline-flex p-4 rounded-xl bg-gradient-to-br ${feature.color} text-white transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                 {feature.icon}
               </div>
-              
+
               <h3 className="text-2xl font-bold text-gray-900 mb-4 relative z-10">
                 {feature.title}
               </h3>
               <p className="text-gray-600 leading-relaxed relative z-10">
                 {feature.description}
               </p>
-              
+
               <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
           ))}
