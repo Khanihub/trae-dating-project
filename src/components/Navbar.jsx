@@ -14,17 +14,16 @@ function Navbar() {
   }, [])
 
   return (
-    <nav className={`sticky top-0 z-50 transition-all duration-300 ${
-      scrolled 
-        ? 'bg-white/95 backdrop-blur-md shadow-lg' 
+    <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
+        ? 'bg-white/95 backdrop-blur-md shadow-lg'
         : 'bg-white/90 backdrop-blur-sm shadow-sm'
-    }`}>
+      }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          
+
           <div className="flex-shrink-0">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent hover:from-primary-700 hover:to-primary-900 transition-all duration-300"
             >
               Mashallah
@@ -56,7 +55,6 @@ function Navbar() {
               </Link>
               <a
                 href="/muslim-dating"
-                target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-700 hover:text-primary-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary-50 relative group"
               >
