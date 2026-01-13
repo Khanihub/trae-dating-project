@@ -175,7 +175,6 @@
 
 
 
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
@@ -242,41 +241,12 @@ function Navbar() {
               <Link
                 key={link.name}
                 to={link.path}
-                className="text-gray-700 dark:text-gray-300 hover:text-primary-600 px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-primary-50 dark:hover:bg-gray-800"
+                className="text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-gray-800 relative group"
               >
                 {link.name}
-              </Link>
-              <Link
-                to="/testimonials"
-                className="text-gray-700 hover:text-primary-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary-50 relative group"
-              >
-                Testimonials
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link
-                to="/contact"
-                className="text-gray-700 hover:text-primary-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary-50 relative group"
-              >
-                Contact
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              <a
-                href="/muslim-dating"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-700 hover:text-primary-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary-50 relative group"
-              >
-                Help
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
-              </a>
-              <Link
-                to="/muslim-dating"
-                className="text-gray-700 hover:text-primary-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-primary-50 relative group"
-              >
-                Muslim dating site
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-            </div>
+            ))}
           </div>
 
           {/* Right side */}
@@ -332,7 +302,11 @@ function Navbar() {
                 Log in
               </Link>
 
-              <button onClick={() => setDark(!dark)} className="text-xl">
+              <button
+                onClick={() => setDark(!dark)}
+                className="text-xl"
+                aria-label="Toggle dark mode"
+              >
                 {dark ? "☀️" : "🌙"}
               </button>
             </div>
