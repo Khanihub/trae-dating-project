@@ -35,7 +35,7 @@ function Login() {
 
 
       localStorage.setItem('token', res.data.token)
-      navigate('/Dashboard')
+      navigate('/dashboard')
     } catch (err) {
       setError(err.response?.data?.message || 'Something went wrong')
     }
