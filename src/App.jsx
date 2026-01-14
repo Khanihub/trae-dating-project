@@ -25,10 +25,10 @@ function App() {
       {/* 🌐 GLOBAL WRAPPER */}
       <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
         
-        {/* ✅ NAVBAR */}
+        {/* ✅ Navbar */}
         <Navbar dark={dark} setDark={setDark} />
 
-        {/* 📌 ROUTES */}
+        {/* 📌 Routes */}
         <Routes>
           {/* Home page */}
           <Route
@@ -48,14 +48,17 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
 
-          {/* Pages */}
+          {/* Other Pages */}
           <Route path="/testimonials" element={<Testimonials />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/muslim-dating" element={<MuslimDating />} />
           <Route path="/dashboard" element={<Dashboard />} />
 
           {/* 404 fallback */}
-          <Route path="*" element={<div className="p-10 text-center">Page Not Found</div>} />
+          <Route
+            path="*"
+            element={<div className="p-10 text-center">Page Not Found</div>}
+          />
         </Routes>
       </div>
     </Router>
