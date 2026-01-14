@@ -133,6 +133,7 @@ import Register from "./pages/Register";
 import Contact from "./pages/Contact";
 import MuslimDating from "./pages/MuslimDating";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 
 function App() {
   const [dark, setDark] = useState(false);
@@ -148,6 +149,20 @@ function App() {
 
   return (
     <Router>
+      {/* ✅ Navbar ONLY HERE */}
+      <Navbar dark={dark} setDark={setDark} />
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/testimonials" element={<Testimonials />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/muslim-dating" element={<MuslimDating />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+
       {/* 🌐 GLOBAL WRAPPER */}
       <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
