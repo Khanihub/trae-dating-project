@@ -32,6 +32,7 @@ function Login() {
       });
 
       console.log(formData);
+      
 
 
       localStorage.setItem('token', res.data.token)
