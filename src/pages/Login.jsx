@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import Dashboard from './Dashboard'
 
 function Login() {
   const navigate = useNavigate()
@@ -12,8 +10,8 @@ function Login() {
     email: '',
     password: '',
   })
-
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -25,26 +23,27 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
+
     try {
-      const res = await axios.post(import.meta.env.VITE_API, {
+      const res = await axios.post(import.meta.env.VITE_API_LOGIN, {
         email: formData.email,
         password: formData.password
-      });
+      })
 
-      console.log(formData);
-      
-
-
+      // Save token and redirect
       localStorage.setItem('token', res.data.token)
       navigate('/dashboard')
     } catch (err) {
+      console.error('Login error:', err)
       setError(err.response?.data?.message || 'Something went wrong')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 flex flex-col">
-      {/* <Navbar /> */}
       <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full">
           <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10 border border-gray-100">
@@ -109,9 +108,12 @@ function Login() {
 
               <button
                 type="submit"
-                className="w-full py-3 font-bold rounded-xl text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg"
+                disabled={loading}
+                className={`w-full py-3 font-bold rounded-xl text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                Sign In
+                {loading ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
           </div>
@@ -123,5 +125,3 @@ function Login() {
 }
 
 export default Login
-
-
