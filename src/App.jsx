@@ -10,11 +10,10 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Contact from "./pages/Contact";
-import MuslimDating from "./pages/MuslimDating";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard.jsx";
 import Profile from "./pages/Profile";
 
-import './App.css'; // Import plain CSS
+import './index.css'; // Import plain CSS
 
 function App() {
   const [dark, setDark] = useState(false);
@@ -54,7 +53,6 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
 
             {/* Other pages */}
-            <Route path="/muslim-dating" element={<MuslimDating />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/testimonials" element={<Testimonials />} />
 
