@@ -5,17 +5,24 @@ import './Profile.css'
 
 function Profile() {
   const navigate = useNavigate()
+
   const [isVisible, setIsVisible] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   
   const [formData, setFormData] = useState({
+    fullName: '',
     gender: '',
     age: '',
+    isMuslim: true,
+    sect: '',
     city: '',
     education: '',
-    sect: '',
+    interests: '',
+    about: '',
+    height: '',
+    profession: ''
   })
   
   const [profileImage, setProfileImage] = useState(null)
@@ -44,32 +51,48 @@ function Profile() {
       
       if (response.ok) {
         const data = await response.json()
-        if (data.profile) {
+        if (data) {
           setFormData({
-            gender: data.profile.gender || '',
-            age: data.profile.age || '',
-            city: data.profile.city || '',
-            education: data.profile.education || '',
-            sect: data.profile.sect || '',
+            fullName: data.fullName || '',
+            gender: data.gender || '',
+            age: data.age || '',
+            isMuslim: data.isMuslim ?? true,
+            sect: data.sect || '',
+            city: data.city || '',
+            education: data.education || '',
+            interests: data.interests || '',
+            about: data.about || '',
+            height: data.height || '',
+            profession: data.profession || ''
           })
-          // Set existing profile image if available
-          if (data.profile.profileImage) {
-            setImagePreview(data.profile.profileImage)
+
+          if (data.image) {
+            setImagePreview(data.image)
           }
         }
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
+    } catch (err) {
+      console.error('Error fetching profile:', err)
+      setMessage({ type: 'error', text: 'Failed to load profile data.' })
     } finally {
       setLoading(false)
     }
   }
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    const { name, value, type, checked } = e.target
+
+    if (name === 'age' && value < 18 && value !== '') {
+      setMessage({ type: 'error', text: 'Age must be 18 or above.' })
+      return
+    }
+
+    if (name === 'isMuslim') {
+      setFormData({ ...formData, isMuslim: checked, sect: '' })
+      return
+    }
+
+    setFormData({ ...formData, [name]: value })
   }
   
   const handleImageChange = (e) => {
@@ -113,22 +136,19 @@ function Profile() {
       
       // Create FormData for file upload
       const submitData = new FormData()
-      submitData.append('gender', formData.gender)
-      submitData.append('age', formData.age)
-      submitData.append('city', formData.city)
-      submitData.append('education', formData.education)
-      submitData.append('sect', formData.sect)
+
+      Object.entries(formData).forEach(([key, value]) => {
+        submitData.append(key, value)
+      })
       
-      // Add image if selected
       if (profileImage) {
-        submitData.append('profileImage', profileImage)
+        submitData.append('image', profileImage)
       }
 
       const response = await fetch('http://localhost:5000/api/profile', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
-          // Don't set Content-Type header - browser will set it automatically with boundary
         },
         body: submitData
       })
@@ -144,6 +164,7 @@ function Profile() {
         setMessage({ type: 'error', text: data.message || 'Failed to save profile' })
       }
     } catch (error) {
+      console.error('Error saving profile:', error)
       setMessage({ type: 'error', text: 'An error occurred. Please try again.' })
     } finally {
       setSaving(false)
@@ -162,155 +183,242 @@ function Profile() {
   }
 
   return (
-    <div className="profile-container">
-      <main className="profile-main">
-        {/* Header Section */}
-        <div className={`profile-header ${!isVisible ? 'hidden' : ''}`}>
-          <button onClick={() => navigate('/dashboard')} className="back-button">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
+    <div className="profile-page">
+      <main className={`profile-container ${isVisible ? 'visible' : ''}`}>
+        <div className="profile-header">
+          <button onClick={() => navigate('/dashboard')} className="back-btn">
+            ← Back to Dashboard
           </button>
-          
-          <div className="header-banner">
+          <div className="header-card">
             <h1>My Profile</h1>
             <p>Complete your profile to find better matches</p>
           </div>
         </div>
 
-        {/* Form Section */}
-        <div className={`form-wrapper ${!isVisible ? 'hidden' : ''}`}>
-          <div className="form-card">
-            {/* Message Alert */}
-            {message.text && (
-              <div className={`alert ${message.type === 'success' ? 'alert-success' : 'alert-error'}`}>
-                {message.text}
-              </div>
-            )}
+        {message.text && (
+          <div className={`alert ${message.type}`}>
+            {message.text}
+          </div>
+        )}
 
-            <form onSubmit={handleSubmit}>
-              {/* Profile Picture Upload */}
-              <div className="profile-picture-section">
-                <label className="profile-picture-label">
-                  Profile Picture
-                </label>
-                
-                <div className="image-preview-wrapper">
-                  {/* Image Preview */}
-                  <div className="image-preview">
-                    {imagePreview ? (
-                      <img src={imagePreview} alt="Profile Preview" />
-                    ) : (
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    )}
-                  </div>
-                  
-                  {/* Remove Image Button */}
+        <form onSubmit={handleSubmit} className="profile-form">
+          {/* Image Upload Section */}
+          <div className="form-section">
+            <h3 className="section-title">Profile Picture</h3>
+            <div className="image-upload-section">
+              <div className="image-upload">
+                <div className="image-box">
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Profile" />
+                  ) : (
+                    <div className="no-image">
+                      <span className="camera-icon">📷</span>
+                      <span>No Image</span>
+                    </div>
+                  )}
+                </div>
+                <div className="image-actions">
+                  <label htmlFor="image-input" className="upload-btn">
+                    Choose Image
+                  </label>
+                  <input 
+                    id="image-input"
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                  />
                   {imagePreview && (
-                    <button type="button" onClick={removeImage} className="remove-image-button">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                    <button type="button" onClick={removeImage} className="remove-img-btn">
+                      Remove Image
                     </button>
                   )}
                 </div>
-                
-                {/* Upload Button */}
-                <div className="upload-button-wrapper">
-                  <label className="upload-button-label">
-                    <div className="upload-button">
-                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>{imagePreview ? 'Change Photo' : 'Upload Photo'}</span>
-                    </div>
-                    <input type="file" accept="image/*" onChange={handleImageChange} />
-                  </label>
-                </div>
-                <p className="upload-hint">Max size: 5MB (JPG, PNG, GIF)</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Basic Information */}
+          <div className="form-section">
+            <h3 className="section-title">Basic Information</h3>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Full Name *</label>
+                <input 
+                  type="text" 
+                  name="fullName" 
+                  value={formData.fullName} 
+                  onChange={handleChange} 
+                  placeholder="Enter your full name" 
+                  required 
+                  className="profile-input" 
+                />
               </div>
 
-              {/* Gender */}
               <div className="form-group">
-                <label className="form-label">
-                  Gender <span className="required">*</span>
-                </label>
-                <select name="gender" value={formData.gender} onChange={handleChange} required className="form-select">
+                <label>Age *</label>
+                <input
+                  type="number"
+                  name="age"
+                  value={formData.age || ''}
+                  onChange={handleChange}
+                  placeholder="Enter your age"
+                  className="profile-input"
+                  min="18"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Gender *</label>
+                <select 
+                  name="gender" 
+                  value={formData.gender} 
+                  onChange={handleChange} 
+                  required 
+                  className="profile-input"
+                >
                   <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
 
-              {/* Age */}
               <div className="form-group">
-                <label className="form-label">
-                  Age <span className="required">*</span>
-                </label>
-                <input type="number" name="age" value={formData.age} onChange={handleChange} required min="18" max="100" placeholder="Enter your age" className="form-input" />
+                <label>Height (cm)</label>
+                <input 
+                  type="number" 
+                  name="height" 
+                  value={formData.height} 
+                  onChange={handleChange} 
+                  placeholder="e.g., 170" 
+                  className="profile-input" 
+                />
               </div>
+            </div>
+          </div>
 
-              {/* City */}
-              <div className="form-group">
-                <label className="form-label">
-                  City <span className="required">*</span>
-                </label>
-                <input type="text" name="city" value={formData.city} onChange={handleChange} required placeholder="Enter your city" className="form-input" />
-              </div>
+          {/* Religious Information */}
+          <div className="form-section">
+            <h3 className="section-title">Religious Information</h3>
+            <div className="form-group checkbox-group">
+              <label className="checkbox-label">
+                <input 
+                  type="checkbox" 
+                  name="isMuslim" 
+                  checked={formData.isMuslim} 
+                  onChange={handleChange} 
+                />
+                <span className="checkbox-text">I am Muslim</span>
+              </label>
+            </div>
 
-              {/* Education */}
+            {formData.isMuslim && (
               <div className="form-group">
-                <label className="form-label">
-                  Education <span className="required">*</span>
-                </label>
-                <select name="education" value={formData.education} onChange={handleChange} required className="form-select">
-                  <option value="">Select Education</option>
-                  <option value="High School">High School</option>
-                  <option value="Bachelor's Degree">Bachelor's Degree</option>
-                  <option value="Master's Degree">Master's Degree</option>
-                  <option value="PhD">PhD</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              {/* Sect */}
-              <div className="form-group">
-                <label className="form-label">
-                  Sect <span className="required">*</span>
-                </label>
-                <select name="sect" value={formData.sect} onChange={handleChange} required className="form-select">
+                <label>Sect</label>
+                <select
+                  name="sect"
+                  value={formData.sect}
+                  onChange={handleChange}
+                  className="profile-input"
+                >
                   <option value="">Select Sect</option>
                   <option value="Sunni">Sunni</option>
                   <option value="Shia">Shia</option>
-                  <option value="Other">Other</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
+                  <option value="Ahle Hadith">Ahle Hadith</option>
+                  <option value="Deobandi">Deobandi</option>
+                  <option value="Barelvi">Barelvi</option>
+                  <option value="Prefer Not to Say">Prefer Not to Say</option>
                 </select>
               </div>
-
-              {/* Submit Button */}
-              <div className="submit-button-wrapper">
-                <button type="submit" disabled={saving} className="submit-button">
-                  {saving ? (
-                    <span className="submit-button-loading">
-                      <svg className="loading-spinner" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Saving...
-                    </span>
-                  ) : (
-                    'Save Profile'
-                  )}
-                </button>
-              </div>
-            </form>
+            )}
           </div>
-        </div>
-      </main>
 
+          {/* Location & Education */}
+          <div className="form-section">
+            <h3 className="section-title">Location & Education</h3>
+            <div className="form-grid">
+              <div className="form-group">
+                <label>City</label>
+                <input 
+                  type="text" 
+                  name="city" 
+                  value={formData.city} 
+                  onChange={handleChange} 
+                  placeholder="e.g., Islamabad" 
+                  className="profile-input" 
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Education</label>
+                <input 
+                  type="text" 
+                  name="education" 
+                  value={formData.education} 
+                  onChange={handleChange} 
+                  placeholder="e.g., Bachelor's Degree" 
+                  className="profile-input" 
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Profession</label>
+                <input 
+                  type="text" 
+                  name="profession" 
+                  value={formData.profession} 
+                  onChange={handleChange} 
+                  placeholder="e.g., Software Engineer" 
+                  className="profile-input" 
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Interests</label>
+                <input 
+                  type="text" 
+                  name="interests" 
+                  value={formData.interests} 
+                  onChange={handleChange} 
+                  placeholder="e.g., Reading, Travel, Cooking" 
+                  className="profile-input" 
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* About Me */}
+          <div className="form-section">
+            <h3 className="section-title">About Me</h3>
+            <div className="form-group">
+              <label>Tell us about yourself</label>
+              <textarea 
+                name="about" 
+                value={formData.about} 
+                onChange={handleChange} 
+                placeholder="Write a brief description about yourself, your values, and what you're looking for..." 
+                className="profile-input profile-textarea"
+                rows="6"
+              ></textarea>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="form-actions">
+            <button type="submit" disabled={saving} className="save-btn">
+              {saving ? (
+                <>
+                  <span className="btn-spinner"></span>
+                  Saving...
+                </>
+              ) : (
+                'Save Profile'
+              )}
+            </button>
+          </div>
+        </form>
+      </main>
     </div>
   )
 }
