@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import './Settings.css'
 
 function Settings() {
   const navigate = useNavigate()
@@ -10,6 +11,7 @@ function Settings() {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+  // Form States
   const [profileData, setProfileData] = useState({
     fullName: '',
     email: '',
@@ -46,6 +48,8 @@ function Settings() {
       navigate('/login')
     }
     
+    // Load user data here from your API
+    // For now, using placeholder data
     setProfileData({
       fullName: 'John Doe',
       email: 'john@example.com',
@@ -59,7 +63,7 @@ function Settings() {
 
   const handleProfileUpdate = (e) => {
     e.preventDefault()
-
+    // Add your API call here to update profile
     console.log('Updating profile:', profileData)
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 3000)
@@ -71,6 +75,7 @@ function Settings() {
       alert('Passwords do not match!')
       return
     }
+    // Add your API call here to change password
     console.log('Changing password')
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
     setShowSuccessMessage(true)
@@ -78,19 +83,21 @@ function Settings() {
   }
 
   const handlePrivacyUpdate = () => {
+    // Add your API call here to update privacy settings
     console.log('Updating privacy settings:', privacySettings)
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 3000)
   }
 
   const handleNotificationUpdate = () => {
+    // Add your API call here to update notification settings
     console.log('Updating notification settings:', notificationSettings)
     setShowSuccessMessage(true)
     setTimeout(() => setShowSuccessMessage(false), 3000)
   }
 
   const handleDeleteAccount = () => {
-
+    // Add your API call here to delete account
     console.log('Deleting account')
     localStorage.removeItem('token')
     navigate('/login')
@@ -105,63 +112,47 @@ function Settings() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-pink-50 to-purple-50 flex flex-col">
+    <div className="settings-page">
       <Navbar />
 
-      <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="settings-main">
         {/* Header */}
-        <div 
-          className={`relative overflow-hidden bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 rounded-3xl p-8 md:p-12 text-white shadow-2xl mb-8 transform transition-all duration-700 ${
-            isVisible ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-10 opacity-0 scale-95'
-          }`}
-        >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full -ml-24 -mb-24"></div>
+        <div className={`settings-header ${isVisible ? 'visible' : ''}`}>
+          <div className="header-bg-circle circle-1"></div>
+          <div className="header-bg-circle circle-2"></div>
           
-          <div className="relative z-10">
-            <h1 className="text-3xl md:text-5xl font-extrabold mb-3">
-              Account Settings
-            </h1>
-            <p className="text-slate-200 text-lg">
-              Manage your account preferences and security
-            </p>
+          <div className="header-content">
+            <h1>Account Settings</h1>
+            <p>Manage your account preferences and security</p>
           </div>
         </div>
 
         {/* Success Message */}
         {showSuccessMessage && (
-          <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg shadow-md animate-fade-in">
-            <div className="flex items-center">
-              <svg className="w-6 h-6 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+          <div className="success-message">
+            <div className="success-content">
+              <svg className="success-icon" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              <p className="text-green-700 font-semibold">Settings updated successfully!</p>
+              <p>Settings updated successfully!</p>
             </div>
           </div>
         )}
 
         {/* Settings Container */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="settings-container">
           {/* Sidebar Tabs */}
-          <div 
-            className={`lg:col-span-1 transform transition-all duration-700 ${
-              isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'
-            }`}
-          >
-            <div className="bg-white rounded-2xl shadow-lg p-4 sticky top-6">
-              <nav className="space-y-2">
+          <div className={`settings-sidebar ${isVisible ? 'visible' : ''}`}>
+            <div className="sidebar-inner">
+              <nav className="sidebar-nav">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                      activeTab === tab.id
-                        ? 'bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg scale-105'
-                        : 'text-gray-700 hover:bg-gray-100 hover:scale-102'
-                    }`}
+                    className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                   >
-                    <span className="text-2xl">{tab.icon}</span>
-                    <span>{tab.name}</span>
+                    <span className="tab-icon">{tab.icon}</span>
+                    <span className="tab-name">{tab.name}</span>
                   </button>
                 ))}
               </nav>
@@ -169,81 +160,62 @@ function Settings() {
           </div>
 
           {/* Content Area */}
-          <div 
-            className={`lg:col-span-3 transform transition-all duration-700 ${
-              isVisible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
-            }`}
-          >
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className={`settings-content ${isVisible ? 'visible' : ''}`}>
+            <div className="content-card">
               
               {/* Profile Info Tab */}
               {activeTab === 'profile' && (
-                <div className="animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <span className="text-3xl">👤</span>
+                <div className="tab-content">
+                  <h2 className="tab-title">
+                    <span className="title-icon">👤</span>
                     Personal Information
                   </h2>
-                  <form onSubmit={handleProfileUpdate} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Full Name
-                        </label>
+                  <form onSubmit={handleProfileUpdate} className="settings-form">
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>Full Name</label>
                         <input
                           type="text"
                           value={profileData.fullName}
                           onChange={(e) => setProfileData({...profileData, fullName: e.target.value})}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all outline-none"
                           placeholder="Enter your full name"
                         />
                       </div>
                       
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Email Address
-                        </label>
+                      <div className="form-group">
+                        <label>Email Address</label>
                         <input
                           type="email"
                           value={profileData.email}
                           onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all outline-none"
                           placeholder="your@email.com"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Phone Number
-                        </label>
+                      <div className="form-group">
+                        <label>Phone Number</label>
                         <input
                           type="tel"
                           value={profileData.phone}
                           onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all outline-none"
                           placeholder="+92 300 1234567"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Date of Birth
-                        </label>
+                      <div className="form-group">
+                        <label>Date of Birth</label>
                         <input
                           type="date"
                           value={profileData.dateOfBirth}
                           onChange={(e) => setProfileData({...profileData, dateOfBirth: e.target.value})}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all outline-none"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Gender
-                        </label>
+                      <div className="form-group">
+                        <label>Gender</label>
                         <select
                           value={profileData.gender}
                           onChange={(e) => setProfileData({...profileData, gender: e.target.value})}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all outline-none"
                         >
                           <option value="">Select Gender</option>
                           <option value="male">Male</option>
@@ -253,11 +225,8 @@ function Settings() {
                       </div>
                     </div>
 
-                    <div className="flex justify-end pt-4">
-                      <button
-                        type="submit"
-                        className="px-8 py-3 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
+                    <div className="form-actions">
+                      <button type="submit" className="btn-primary">
                         Save Changes
                       </button>
                     </div>
@@ -267,64 +236,52 @@ function Settings() {
 
               {/* Password Tab */}
               {activeTab === 'password' && (
-                <div className="animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <span className="text-3xl">🔒</span>
+                <div className="tab-content">
+                  <h2 className="tab-title">
+                    <span className="title-icon">🔒</span>
                     Change Password
                   </h2>
-                  <form onSubmit={handlePasswordChange} className="space-y-6 max-w-md">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Current Password
-                      </label>
+                  <form onSubmit={handlePasswordChange} className="settings-form password-form">
+                    <div className="form-group">
+                      <label>Current Password</label>
                       <input
                         type="password"
                         value={passwordData.currentPassword}
                         onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all outline-none"
                         placeholder="Enter current password"
                         required
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        New Password
-                      </label>
+                    <div className="form-group">
+                      <label>New Password</label>
                       <input
                         type="password"
                         value={passwordData.newPassword}
                         onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all outline-none"
                         placeholder="Enter new password"
                         required
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Confirm New Password
-                      </label>
+                    <div className="form-group">
+                      <label>Confirm New Password</label>
                       <input
                         type="password"
                         value={passwordData.confirmPassword}
                         onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:ring-4 focus:ring-slate-100 transition-all outline-none"
                         placeholder="Confirm new password"
                         required
                       />
                     </div>
 
-                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
-                      <p className="text-sm text-blue-700">
+                    <div className="info-box">
+                      <p>
                         <strong>Password Requirements:</strong> Minimum 8 characters, at least one uppercase letter, one number, and one special character.
                       </p>
                     </div>
 
-                    <button
-                      type="submit"
-                      className="w-full px-8 py-3 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                    >
+                    <button type="submit" className="btn-primary full-width">
                       Update Password
                     </button>
                   </form>
@@ -333,137 +290,114 @@ function Settings() {
 
               {/* Privacy Tab */}
               {activeTab === 'privacy' && (
-                <div className="animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <span className="text-3xl">🛡️</span>
+                <div className="tab-content">
+                  <h2 className="tab-title">
+                    <span className="title-icon">🛡️</span>
                     Privacy Settings
                   </h2>
-                  <div className="space-y-6">
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-4">Profile Visibility</h3>
-                      <div className="space-y-4">
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                              <span className="text-xl">👁️</span>
-                            </div>
+                  <div className="privacy-sections">
+                    <div className="privacy-section purple">
+                      <h3>Profile Visibility</h3>
+                      <div className="privacy-options">
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">👁️</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Show My Profile</p>
-                              <p className="text-sm text-gray-600">Allow others to view your profile</p>
+                              <p className="option-title">Show My Profile</p>
+                              <p className="option-desc">Allow others to view your profile</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={privacySettings.showProfile}
                               onChange={(e) => setPrivacySettings({...privacySettings, showProfile: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
 
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                              <span className="text-xl">📸</span>
-                            </div>
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">📸</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Show Photos</p>
-                              <p className="text-sm text-gray-600">Display your photos to visitors</p>
+                              <p className="option-title">Show Photos</p>
+                              <p className="option-desc">Display your photos to visitors</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={privacySettings.showPhotos}
                               onChange={(e) => setPrivacySettings({...privacySettings, showPhotos: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
 
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                              <span className="text-xl">📞</span>
-                            </div>
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">📞</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Show Contact Info</p>
-                              <p className="text-sm text-gray-600">Share phone number with matches</p>
+                              <p className="option-title">Show Contact Info</p>
+                              <p className="option-desc">Share phone number with matches</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={privacySettings.showContact}
                               onChange={(e) => setPrivacySettings({...privacySettings, showContact: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-purple-500 peer-checked:to-pink-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-4">Communication</h3>
-                      <div className="space-y-4">
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                              <span className="text-xl">💬</span>
-                            </div>
+                    <div className="privacy-section blue">
+                      <h3>Communication</h3>
+                      <div className="privacy-options">
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">💬</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Allow Messages</p>
-                              <p className="text-sm text-gray-600">Receive messages from matches</p>
+                              <p className="option-title">Allow Messages</p>
+                              <p className="option-desc">Receive messages from matches</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={privacySettings.allowMessages}
                               onChange={(e) => setPrivacySettings({...privacySettings, allowMessages: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-indigo-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
 
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                              <span className="text-xl">🕐</span>
-                            </div>
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">🕐</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Show Last Seen</p>
-                              <p className="text-sm text-gray-600">Let others see when you were active</p>
+                              <p className="option-title">Show Last Seen</p>
+                              <p className="option-desc">Let others see when you were active</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={privacySettings.showLastSeen}
                               onChange={(e) => setPrivacySettings({...privacySettings, showLastSeen: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-indigo-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
                       </div>
                     </div>
 
-                    <div className="flex justify-end pt-4">
-                      <button
-                        onClick={handlePrivacyUpdate}
-                        className="px-8 py-3 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
+                    <div className="form-actions">
+                      <button onClick={handlePrivacyUpdate} className="btn-primary">
                         Save Privacy Settings
                       </button>
                     </div>
@@ -473,132 +407,109 @@ function Settings() {
 
               {/* Notifications Tab */}
               {activeTab === 'notifications' && (
-                <div className="animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <span className="text-3xl">🔔</span>
+                <div className="tab-content">
+                  <h2 className="tab-title">
+                    <span className="title-icon">🔔</span>
                     Notification Preferences
                   </h2>
-                  <div className="space-y-6">
-                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-4">Email Notifications</h3>
-                      <div className="space-y-4">
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors">
-                              <span className="text-xl">📧</span>
-                            </div>
+                  <div className="privacy-sections">
+                    <div className="privacy-section amber">
+                      <h3>Email Notifications</h3>
+                      <div className="privacy-options">
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">📧</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Enable Email Notifications</p>
-                              <p className="text-sm text-gray-600">Receive updates via email</p>
+                              <p className="option-title">Enable Email Notifications</p>
+                              <p className="option-desc">Receive updates via email</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={notificationSettings.emailNotifications}
                               onChange={(e) => setNotificationSettings({...notificationSettings, emailNotifications: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
 
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors">
-                              <span className="text-xl">💝</span>
-                            </div>
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">💝</div>
                             <div>
-                              <p className="font-semibold text-gray-900">New Matches</p>
-                              <p className="text-sm text-gray-600">Get notified about new matches</p>
+                              <p className="option-title">New Matches</p>
+                              <p className="option-desc">Get notified about new matches</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={notificationSettings.newMatches}
                               onChange={(e) => setNotificationSettings({...notificationSettings, newMatches: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
 
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors">
-                              <span className="text-xl">💬</span>
-                            </div>
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">💬</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Messages</p>
-                              <p className="text-sm text-gray-600">Alert for new messages</p>
+                              <p className="option-title">Messages</p>
+                              <p className="option-desc">Alert for new messages</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={notificationSettings.messages}
                               onChange={(e) => setNotificationSettings({...notificationSettings, messages: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
 
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors">
-                              <span className="text-xl">⭐</span>
-                            </div>
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">⭐</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Interests</p>
-                              <p className="text-sm text-gray-600">When someone shows interest</p>
+                              <p className="option-title">Interests</p>
+                              <p className="option-desc">When someone shows interest</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={notificationSettings.interests}
                               onChange={(e) => setNotificationSettings({...notificationSettings, interests: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
 
-                        <label className="flex items-center justify-between cursor-pointer group">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors">
-                              <span className="text-xl">🎁</span>
-                            </div>
+                        <label className="toggle-option">
+                          <div className="option-info">
+                            <div className="option-icon">🎁</div>
                             <div>
-                              <p className="font-semibold text-gray-900">Promotions</p>
-                              <p className="text-sm text-gray-600">Special offers and updates</p>
+                              <p className="option-title">Promotions</p>
+                              <p className="option-desc">Special offers and updates</p>
                             </div>
                           </div>
-                          <div className="relative">
+                          <div className="toggle-switch">
                             <input
                               type="checkbox"
                               checked={notificationSettings.promotions}
                               onChange={(e) => setNotificationSettings({...notificationSettings, promotions: e.target.checked})}
-                              className="sr-only peer"
                             />
-                            <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-gradient-to-r peer-checked:from-amber-500 peer-checked:to-orange-500 transition-all duration-300"></div>
-                            <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"></div>
+                            <span className="toggle-slider"></span>
                           </div>
                         </label>
                       </div>
                     </div>
 
-                    <div className="flex justify-end pt-4">
-                      <button
-                        onClick={handleNotificationUpdate}
-                        className="px-8 py-3 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
+                    <div className="form-actions">
+                      <button onClick={handleNotificationUpdate} className="btn-primary">
                         Save Notification Settings
                       </button>
                     </div>
@@ -608,39 +519,34 @@ function Settings() {
 
               {/* Danger Zone Tab */}
               {activeTab === 'danger' && (
-                <div className="animate-fade-in">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <span className="text-3xl">⚠️</span>
+                <div className="tab-content">
+                  <h2 className="tab-title">
+                    <span className="title-icon">⚠️</span>
                     Danger Zone
                   </h2>
-                  <div className="space-y-6">
-                    <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
-                      <h3 className="text-lg font-bold text-red-600 mb-2">Delete Account</h3>
-                      <p className="text-gray-700 mb-4">
+                  <div className="danger-sections">
+                    <div className="danger-section red">
+                      <h3>Delete Account</h3>
+                      <p>
                         Once you delete your account, there is no going back. This action will permanently remove your profile, messages, and all associated data.
                       </p>
-                      <ul className="list-disc list-inside text-sm text-gray-600 mb-6 space-y-1">
+                      <ul>
                         <li>All your profile information will be deleted</li>
                         <li>Your matches and conversations will be lost</li>
                         <li>You won't be able to recover your account</li>
                         <li>Other users won't be able to see your profile</li>
                       </ul>
-                      <button
-                        onClick={() => setShowDeleteConfirm(true)}
-                        className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
+                      <button onClick={() => setShowDeleteConfirm(true)} className="btn-danger">
                         Delete My Account
                       </button>
                     </div>
 
-                    <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-6">
-                      <h3 className="text-lg font-bold text-yellow-700 mb-2">Deactivate Account</h3>
-                      <p className="text-gray-700 mb-4">
+                    <div className="danger-section yellow">
+                      <h3>Deactivate Account</h3>
+                      <p>
                         Temporarily hide your profile from others. You can reactivate anytime.
                       </p>
-                      <button
-                        className="px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
+                      <button className="btn-warning">
                         Deactivate Account
                       </button>
                     </div>
@@ -654,28 +560,20 @@ function Settings() {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform animate-scale-in">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-4xl">⚠️</span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Delete Account?</h3>
-                <p className="text-gray-600">
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <div className="modal-icon">⚠️</div>
+                <h3>Delete Account?</h3>
+                <p>
                   This action cannot be undone. All your data will be permanently removed.
                 </p>
               </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl transition-all duration-300"
-                >
+              <div className="modal-actions">
+                <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary">
                   Cancel
                 </button>
-                <button
-                  onClick={handleDeleteAccount}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl transition-all duration-300"
-                >
+                <button onClick={handleDeleteAccount} className="btn-danger">
                   Delete
                 </button>
               </div>
@@ -685,37 +583,6 @@ function Settings() {
 
       </main>
 
-      <Footer />
-
-      <style jsx>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes scale-in {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-
-        .animate-scale-in {
-          animation: scale-in 0.3s ease-out;
-        }
-      `}</style>
     </div>
   )
 }
