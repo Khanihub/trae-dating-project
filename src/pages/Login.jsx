@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Footer from '../components/Footer'
+import './Login.css'
 
 function Login() {
   const navigate = useNavigate()
@@ -10,115 +11,99 @@ function Login() {
     email: '',
     password: '',
   })
+
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setError('')
+    setSuccess('')
+  }
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setError('All fields are required.')
+      return false
+    }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      setError('Please enter a valid email address.')
+      return false
+    }
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.')
+      return false
+    }
+    return true
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setSuccess('')
+
+    if (!validateForm()) return
     setLoading(true)
 
     try {
-      const res = await axios.post(import.meta.env.VITE_API_LOGIN, {
-        email: formData.email,
-        password: formData.password
-      })
-
-      // Save token and redirect
+      const res = await axios.post(import.meta.env.VITE_API_LOGIN, formData)
       localStorage.setItem('token', res.data.token)
-      navigate('/dashboard')
+      setSuccess('Login successful. Redirecting...')
+      setTimeout(() => navigate('/dashboard'), 1200)
     } catch (err) {
-      console.error('Login error:', err)
-      setError(err.response?.data?.message || 'Something went wrong')
+      setError(err.response?.data?.message || 'Invalid credentials. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 flex flex-col">
-      <div className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10 border border-gray-100">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl mb-4 shadow-lg">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
-                Welcome Back
-              </h2>
-              <p className="text-gray-600">
-                Sign in to your account or{' '}
-                <Link
-                  to="/register"
-                  className="font-semibold text-primary-600 hover:text-primary-700 transition-colors"
-                >
-                  create a new account
-                </Link>
-              </p>
+    <div className="login-page">
+      <div className="login-wrapper">
+        <div className="login-card">
+          <div className="login-header">
+            <h2>Welcome Back</h2>
+            <p>
+              Sign in or <Link to="/register">create an account</Link>
+            </p>
+          </div>
+
+          {error && <div className="alert error">{error}</div>}
+          {success && <div className="alert success">{success}</div>}
+
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+              />
             </div>
 
-            {error && (
-              <p className="mb-4 text-center text-red-600 font-medium">
-                {error}
-              </p>
-            )}
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                name="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+              />
+            </div>
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Email address
-                  </label>
-                  <input
-                    name="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500"
-                    placeholder="you@example.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Password
-                  </label>
-                  <input
-                    name="password"
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500"
-                    placeholder="Enter your password"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-3 font-bold rounded-xl text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 shadow-lg ${
-                  loading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                {loading ? 'Signing In...' : 'Sign In'}
-              </button>
-            </form>
-          </div>
+            <button type="submit" disabled={loading} className="login-btn">
+              {loading ? 'Signing In...' : 'Sign In'}
+            </button>
+          </form>
         </div>
       </div>
+
       <Footer />
     </div>
   )

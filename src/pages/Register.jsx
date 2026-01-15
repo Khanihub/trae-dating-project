@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Footer from '../components/Footer'
+import './Register.css'
 
 function Register() {
   const navigate = useNavigate()
@@ -14,6 +15,8 @@ function Register() {
   })
 
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setFormData({
@@ -25,6 +28,17 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setSuccess('')
+
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError('All fields are required')
+      return
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
@@ -32,8 +46,10 @@ function Register() {
     }
 
     try {
+      setLoading(true)
+
       const res = await axios.post(
-        `${import.meta.env.VITE_API}/api/auth/register`, 
+        `${import.meta.env.VITE_API}/api/auth/register`,
         {
           name: formData.name,
           email: formData.email,
@@ -42,38 +58,46 @@ function Register() {
       )
 
       localStorage.setItem('token', res.data.token)
-      navigate('/dashboard')
+      setSuccess('Account created successfully! Redirecting...')
+
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 1500)
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong')
+      setError(err.response?.data?.message || 'Registration failed, please try again')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* <Navbar /> */}
+    <div className="register-page">
+      <div className="register-wrapper">
+        <form onSubmit={handleSubmit} className="register-form">
 
-      <div className="flex-grow flex items-center justify-center">
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
+          <h2>Create Your Account</h2>
+          <p className="subtitle">
+            Start your journey with a secure and personalized profile
+          </p>
 
-          {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
-          )}
+          {error && <div className="alert error">{error}</div>}
+          {success && <div className="alert success">{success}</div>}
 
           <input
             name="name"
             placeholder="Full Name"
             value={formData.name}
             onChange={handleChange}
-            className="w-full border p-3 rounded"
+            className="register-input"
           />
 
           <input
             name="email"
             type="email"
-            placeholder="Email"
+            placeholder="Email Address"
             value={formData.email}
             onChange={handleChange}
-            className="w-full border p-3 rounded"
+            className="register-input"
           />
 
           <input
@@ -82,7 +106,7 @@ function Register() {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full border p-3 rounded"
+            className="register-input"
           />
 
           <input
@@ -91,19 +115,18 @@ function Register() {
             placeholder="Confirm Password"
             value={formData.confirmPassword}
             onChange={handleChange}
-            className="w-full border p-3 rounded"
+            className="register-input"
           />
 
-          <button className="w-full bg-blue-600 text-white p-3 rounded">
-            Register
+          <button type="submit" disabled={loading} className="register-btn">
+            {loading ? 'Creating Account...' : 'Register'}
           </button>
 
-          <p className="text-center text-sm">
+          <p className="login-link">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-600">
-              Login
-            </Link>
+            <Link to="/login">Login</Link>
           </p>
+
         </form>
       </div>
 

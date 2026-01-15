@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 
 const navLinks = [
@@ -11,10 +11,20 @@ const navLinks = [
 ];
 
 function Navbar() {
+  const navigate = useNavigate();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dark, setDark] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // Check auth state
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  // Dark mode from storage
   useEffect(() => {
     const storedDark = localStorage.getItem("darkMode");
     if (storedDark === "true") {
@@ -23,12 +33,14 @@ function Navbar() {
     }
   }, []);
 
+  // Scroll effect
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Dark mode toggle
   useEffect(() => {
     if (dark) {
       document.documentElement.classList.add("dark");
@@ -38,6 +50,13 @@ function Navbar() {
       localStorage.setItem("darkMode", "false");
     }
   }, [dark]);
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    navigate("/login");
+  };
 
   return (
     <nav className={`navbar ${scrolled ? "navbar-scrolled" : ""}`}>
@@ -50,6 +69,7 @@ function Navbar() {
           ))}
         </div>
 
+        {/* Desktop Actions */}
         <div className="navbar-actions">
           <button
             className="dark-toggle"
@@ -58,7 +78,17 @@ function Navbar() {
           >
             {dark ? "☀️" : "🌙"}
           </button>
-          <Link to="/login" className="btn-login">Log in</Link>
+
+          {!isLoggedIn ? (
+            <Link to="/login" className="btn-login">Log in</Link>
+          ) : (
+            <>
+              <Link to="/profile" className="btn-login">Profile</Link>
+              <button onClick={handleLogout} className="btn-logout">
+                Logout
+              </button>
+            </>
+          )}
         </div>
 
         <button
@@ -70,6 +100,7 @@ function Navbar() {
         </button>
       </div>
 
+      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="mobile-menu">
           {navLinks.map((link) => (
@@ -83,7 +114,30 @@ function Navbar() {
           ))}
 
           <div className="mobile-menu-actions">
-            <Link to="/login" onClick={() => setIsMenuOpen(false)}>Log in</Link>
+            {!isLoggedIn ? (
+              <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                Log in
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="btn-logout"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+
             <button
               className="dark-toggle"
               onClick={() => setDark(!dark)}
