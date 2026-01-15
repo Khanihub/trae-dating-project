@@ -49,7 +49,7 @@ function Register() {
       setLoading(true)
 
       const res = await axios.post(
-        `${import.meta.env.VITE_API}/api/auth/register`,
+        `${import.meta.env.VITE_API_BASE}/api/auth/register`,
         {
           name: formData.name,
           email: formData.email,
@@ -130,7 +130,6 @@ function Register() {
         </form>
       </div>
 
-      <Footer />
     </div>
   )
 }

@@ -11,8 +11,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard.jsx";
-import Settings from './pages/Settings'
 import Profile from "./pages/Profile";
+import Matches from './pages/Matches'
+import Settings from './pages/Settings'
 
 import './index.css'; // Import plain CSS
 
@@ -52,6 +53,7 @@ function App() {
             {/* User pages */}
             <Route path="/profile" element={<Profile />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/matches" element={<Matches />} />
             <Route path="/settings" element={<Settings />} /> 
 
             {/* Other pages */}
