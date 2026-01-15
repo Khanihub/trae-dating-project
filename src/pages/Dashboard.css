@@ -4,6 +4,7 @@
   flex-direction: column;
   background: linear-gradient(135deg, #fef3f7, #fce7f3, #ede9fe);
   transition: background 0.3s;
+  
 }
 
 .dashboard-content {
@@ -11,6 +12,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 3rem 1rem;
+  text-decoration: none;
 }
 
 .welcome-section {

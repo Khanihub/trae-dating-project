@@ -583,6 +583,7 @@ function Settings() {
 
       </main>
 
+      <Footer />
     </div>
   )
 }
