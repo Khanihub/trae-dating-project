@@ -336,7 +336,7 @@ function Navbar() {
   return (
     <nav className={`navbar ${scrolled ? "navbar-scrolled" : ""}`}>
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">Rishta.com</Link>
+        <Link to="/" className="navbar-logo">FaithBond</Link>
 
         <div className="navbar-links">
           {navLinks.map((link) => (
