@@ -81,7 +81,7 @@ function App() {
         <Footer />
 
         {/* Floating Notification Bell - Only show when logged in */}
-        <NotificationBell />
+        <Notificationbell />
       </div>
     </Router>
   );
