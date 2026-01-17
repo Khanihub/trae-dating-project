@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import './Messages.css'
 
-const API_BASE = import.meta.env.VITE_API
+const API_BASE = import.meta.env.VITE_API || 'http://new-backend-production-766f.up.railway.app/api'
 
 function Messages() {
   const navigate = useNavigate()
@@ -18,57 +18,67 @@ function Messages() {
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return navigate('/login')
-
     fetchConversations(token)
   }, [navigate])
 
   const fetchConversations = async (token) => {
     try {
-      const res = await fetch(`${API_BASE}/api/messages/conversations`, {
+      const res = await fetch(`${API_BASE}/messages/conversations`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-
+      if (!res.ok) throw new Error("Failed to fetch conversations")
       const data = await res.json()
-      setConversations(data)
+      setConversations(data || [])
     } catch (err) {
       console.error(err)
+      alert("Error loading conversations")
     } finally {
       setLoading(false)
     }
   }
 
   const fetchMessages = async (chatId) => {
-    const token = localStorage.getItem('token')
-
-    const res = await fetch(`${API_BASE}/api/messages/${chatId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    const data = await res.json()
-    setMessages(data)
-    setSelectedChat(chatId)
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${API_BASE}/messages/${chatId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) throw new Error("Failed to fetch messages")
+      const data = await res.json()
+      setMessages(data || [])
+      setSelectedChat(chatId)
+      // Scroll to bottom
+      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100)
+    } catch (err) {
+      console.error(err)
+      alert("Error loading messages")
+    }
   }
 
   const handleSendMessage = async (e) => {
     e.preventDefault()
     if (!messageText.trim() || !selectedChat) return
 
-    const token = localStorage.getItem('token')
-
-    await fetch(`${API_BASE}/api/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        chatId: selectedChat,
-        text: messageText
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${API_BASE}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          chatId: selectedChat,
+          text: messageText
+        })
       })
-    })
-
-    setMessageText('')
-    fetchMessages(selectedChat)
+      if (!res.ok) throw new Error("Failed to send message")
+      setMessageText('')
+      fetchMessages(selectedChat)
+    } catch (err) {
+      console.error(err)
+      alert("Error sending message")
+    }
   }
 
   return (
@@ -76,28 +86,23 @@ function Messages() {
       <Navbar />
 
       <div className="messages-container">
-        {/* LEFT */}
+        {/* LEFT: Conversations */}
         <div className="conversations-sidebar">
           <h3>Chats</h3>
-
           {loading && <p>Loading chats...</p>}
-
-          {!loading && conversations.length === 0 && (
-            <p>No conversation has started yet</p>
-          )}
-
-          {conversations.map(chat => (
+          {!loading && conversations.length === 0 && <p>No conversation has started yet</p>}
+          {!loading && conversations.map(chat => (
             <div
               key={chat._id}
               onClick={() => fetchMessages(chat._id)}
-              style={{ cursor: 'pointer' }}
+              className={`conversation-item ${selectedChat === chat._id ? 'active' : ''}`}
             >
-              {chat.user.name}
+              {chat.user?.name || "Unnamed"}
             </div>
           ))}
         </div>
 
-        {/* RIGHT */}
+        {/* RIGHT: Messages */}
         <div className="chat-area">
           {!selectedChat ? (
             <p>Select a conversation to start messaging</p>
@@ -108,7 +113,7 @@ function Messages() {
                   <p>No messages yet</p>
                 ) : (
                   messages.map(m => (
-                    <div key={m._id}>
+                    <div key={m._id} className={`message ${m.senderSelf ? 'sent' : 'received'}`}>
                       <p>{m.text}</p>
                     </div>
                   ))
@@ -116,11 +121,12 @@ function Messages() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <form onSubmit={handleSendMessage}>
+              <form className="message-form" onSubmit={handleSendMessage}>
                 <input
+                  type="text"
+                  placeholder="Type a message..."
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Type a message..."
                 />
                 <button type="submit">Send</button>
               </form>
