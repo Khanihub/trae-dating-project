@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Features from "./components/Features";
-import Testimonials from "./components/Testimonials";
+// import Testimonials from "./components/Testimonials";
 import Footer from "./components/Footer";
 import NotificationBell from "./components/NotificationBell";
 
@@ -13,23 +13,12 @@ import Register from "./pages/Register";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard.jsx";
 import Profile from "./pages/Profile";
-import Matches from './pages/Matches';
-import Messages from './pages/Messages';
-import Settings from './pages/Settings.jsx';
+import Matches from './pages/Matches'
+import Messages from './pages/Messages'
+import Settings from './pages/Settings.jsx'
 
-import './index.css';
-
-// Component to conditionally show NotificationBell
-function ConditionalNotificationBell() {
-  const location = useLocation();
-  const token = localStorage.getItem('token');
-  
-  // Only show notification bell if user is logged in
-  // and NOT on login/register pages
-  const showBell = token && location.pathname !== '/login' && location.pathname !== '/register';
-  
-  return showBell ? <NotificationBell /> : null;
-}
+import './index.css'; // Import plain CSS
+import About from "./components/About.jsx";
 
 function App() {
   const [dark, setDark] = useState(false);
@@ -54,8 +43,9 @@ function App() {
               element={
                 <>
                   <Hero />
+                  <About />
                   <Features />
-                  <Testimonials />
+                  <Contact />
                 </>
               }
             />
@@ -68,12 +58,12 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/matches" element={<Matches />} />
-            <Route path="/messages" element={<Messages />} /> 
-            <Route path="/settings" element={<Settings />} /> 
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/settings" element={<Settings />} />
 
             {/* Other pages */}
             <Route path="/contact" element={<Contact />} />
-            <Route path="/testimonials" element={<Testimonials />} />
+            {/* <Route path="/testimonials" element={<Testimonials />} /> */}
 
             {/* 404 fallback */}
             <Route
