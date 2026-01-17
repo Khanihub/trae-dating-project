@@ -6,7 +6,7 @@ import Hero from "./components/Hero";
 import Features from "./components/Features";
 // import Testimonials from "./components/Testimonials";
 import Footer from "./components/Footer";
-import NotificationBell from "./components/NotificationBell";
+import NotificationBell from "./components/Notificationbell.jsx";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -81,7 +81,7 @@ function App() {
         <Footer />
 
         {/* Floating Notification Bell - Only show when logged in */}
-        <ConditionalNotificationBell />
+        <NotificationBell />
       </div>
     </Router>
   );
