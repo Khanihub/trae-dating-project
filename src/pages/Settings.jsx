@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
 import './Settings.css'
+
+const API = import.meta.env.VITE_API
 
 function Settings() {
   const navigate = useNavigate()
@@ -10,98 +10,6 @@ function Settings() {
   const [activeTab, setActiveTab] = useState('profile')
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-
-  // Form States
-  const [profileData, setProfileData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    dateOfBirth: '',
-    gender: ''
-  })
-
-  const [privacySettings, setPrivacySettings] = useState({
-    showProfile: true,
-    showPhotos: true,
-    showContact: false,
-    allowMessages: true,
-    showLastSeen: true
-  })
-
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  })
-
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    newMatches: true,
-    messages: true,
-    interests: true,
-    promotions: false
-  })
-
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      navigate('/login')
-    }
-    
-    // Load user data here from your API
-    // For now, using placeholder data
-    setProfileData({
-      fullName: 'John Doe',
-      email: 'john@example.com',
-      phone: '+92 300 1234567',
-      dateOfBirth: '1995-01-15',
-      gender: 'male'
-    })
-    
-    setTimeout(() => setIsVisible(true), 100)
-  }, [navigate])
-
-  const handleProfileUpdate = (e) => {
-    e.preventDefault()
-    // Add your API call here to update profile
-    console.log('Updating profile:', profileData)
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
-  }
-
-  const handlePasswordChange = (e) => {
-    e.preventDefault()
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('Passwords do not match!')
-      return
-    }
-    // Add your API call here to change password
-    console.log('Changing password')
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
-  }
-
-  const handlePrivacyUpdate = () => {
-    // Add your API call here to update privacy settings
-    console.log('Updating privacy settings:', privacySettings)
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
-  }
-
-  const handleNotificationUpdate = () => {
-    // Add your API call here to update notification settings
-    console.log('Updating notification settings:', notificationSettings)
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
-  }
-
-  const handleDeleteAccount = () => {
-    // Add your API call here to delete account
-    console.log('Deleting account')
-    localStorage.removeItem('token')
-    navigate('/login')
-  }
 
   const tabs = [
     { id: 'profile', name: 'Profile Info', icon: '👤' },
@@ -111,10 +19,132 @@ function Settings() {
     { id: 'danger', name: 'Account', icon: '⚠️' }
   ]
 
+  const [profileData, setProfileData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: ''
+  })
+
+  const [privacySettings, setPrivacySettings] = useState({
+    showProfile: false,
+    showPhotos: false,
+    showContact: false,
+    allowMessages: false,
+    showLastSeen: false
+  })
+
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: false,
+    newMatches: false,
+    messages: false,
+    interests: false,
+    promotions: false
+  })
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    if (!token) return navigate("/login")
+
+    fetch(`${API}/settings`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(data => {
+        setProfileData({
+          fullName: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          dateOfBirth: data.dateOfBirth || "",
+          gender: data.gender || ""
+        })
+
+        setPrivacySettings({
+          showProfile: data.privacySettings?.showProfile ?? false,
+          showPhotos: data.privacySettings?.showPhotos ?? false,
+          showContact: data.privacySettings?.showContact ?? false,
+          allowMessages: data.privacySettings?.allowMessages ?? false,
+          showLastSeen: data.privacySettings?.showLastSeen ?? false
+        })
+
+        setNotificationSettings({
+          emailNotifications: data.notificationSettings?.emailNotifications ?? false,
+          newMatches: data.notificationSettings?.newMatches ?? false,
+          messages: data.notificationSettings?.messages ?? false,
+          interests: data.notificationSettings?.interests ?? false,
+          promotions: data.notificationSettings?.promotions ?? false
+        })
+      })
+      .catch(() => navigate("/login"))
+
+    setTimeout(() => setIsVisible(true), 100)
+  }, [navigate])
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault()
+    const token = localStorage.getItem("token")
+    await fetch(`${API}/settings/profile`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(profileData)
+    })
+    setShowSuccessMessage(true)
+    setTimeout(() => setShowSuccessMessage(false), 3000)
+  }
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault()
+    if (passwordData.newPassword !== passwordData.confirmPassword) return alert("Passwords do not match")
+    const token = localStorage.getItem("token")
+    await fetch(`${API}/settings/password`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(passwordData)
+    })
+    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+    setShowSuccessMessage(true)
+    setTimeout(() => setShowSuccessMessage(false), 3000)
+  }
+
+  const handlePrivacyUpdate = async () => {
+    const token = localStorage.getItem("token")
+    await fetch(`${API}/settings/privacy`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(privacySettings)
+    })
+    setShowSuccessMessage(true)
+    setTimeout(() => setShowSuccessMessage(false), 3000)
+  }
+
+  const handleNotificationUpdate = async () => {
+    const token = localStorage.getItem("token")
+    await fetch(`${API}/settings/notifications`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(notificationSettings)
+    })
+    setShowSuccessMessage(true)
+    setTimeout(() => setShowSuccessMessage(false), 3000)
+  }
+
+  const handleDeleteAccount = async () => {
+    const token = localStorage.getItem("token")
+    await fetch(`${API}/settings/delete`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } })
+    localStorage.removeItem("token")
+    navigate("/login")
+  }
+
   return (
     <div className="settings-page">
-      <Navbar />
-
+  
       <main className="settings-main">
         {/* Header */}
         <div className={`settings-header ${isVisible ? 'visible' : ''}`}>
