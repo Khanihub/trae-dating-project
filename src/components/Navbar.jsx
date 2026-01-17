@@ -345,9 +345,6 @@ function Navbar() {
         </div>  
 
         <div className="navbar-actions">
-          <button className="dark-toggle" onClick={() => setDark(!dark)}>
-            {dark ? "☀️" : "🌙"}
-          </button>
 
           {!isLoggedIn ? (
             <Link to="/login" className="btn-login">Log in</Link>
