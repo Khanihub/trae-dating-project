@@ -4,14 +4,10 @@ import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import "./Matches.css"
 
-// Use your environment variable OR fallback
 const API_URL = import.meta.env.VITE_API || 'http://localhost:5000/api'
 
 function Matches() {
   const navigate = useNavigate()
-  
-  // States
-  const [isVisible, setIsVisible] = useState(false)
   const [matches, setMatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState('all')
@@ -19,110 +15,95 @@ function Matches() {
   const [showFilters, setShowFilters] = useState(false)
   const [selectedMatch, setSelectedMatch] = useState(null)
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [interests, setInterests] = useState([]) 
+  const [isVisible, setIsVisible] = useState(false)
+  const currentUserId = localStorage.getItem('token') 
 
-  const [filters, setFilters] = useState({
-    religion: '',
-    location: '',
-    education: '',
-    profession: '',
-    maritalStatus: ''
-  })
-
-  // Check authentication on mount
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) {
       navigate('/login')
       return
     }
-    
+
     fetchMatches()
+    fetchInterests()
     setTimeout(() => setIsVisible(true), 100)
   }, [navigate])
 
-  // Fetch matches from API
   const fetchMatches = async () => {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')
-      
-      console.log('Fetching matches from:', `${API_URL}/matches/browse`)
-      
-      const response = await fetch(`${API_URL}/matches/browse`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch(`${API_URL}/matches/browse`, {
+        headers: { Authorization: `Bearer ${token}` }
       })
-      
-      console.log('Response status:', response.status)
-      
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Fetched matches:', data)
-        setMatches(data.matches || [])
-      } else {
-        const errorData = await response.json()
-        console.error('API Error:', errorData)
-        
-        if (response.status === 401) {
-          alert('Please login again')
-          navigate('/login')
-        } else if (response.status === 404) {
-          alert(errorData.message || 'Please complete your profile first')
-          navigate('/profile')
-        } else {
-          alert(errorData.message || 'Failed to load matches')
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching matches:', error)
-      alert('Error loading matches. Check if backend is running on port 5000')
+      if (!res.ok) throw new Error('Failed to fetch matches')
+      const data = await res.json()
+      setMatches(data.matches)
+    } catch (err) {
+      console.error(err)
+      alert('Error loading matches')
     } finally {
       setLoading(false)
     }
   }
 
-  // Send interest
-  const handleShowInterest = async (matchId) => {
+  const fetchInterests = async () => {
     try {
       const token = localStorage.getItem('token')
-      const match = matches.find(m => m.id === matchId)
-      
-      if (!match) {
-        alert('Match not found')
-        return
-      }
-
-      console.log('Sending interest to userId:', match.userId)
-
-      const response = await fetch(`${API_URL}/interest/${match.userId}`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  }
-})
-
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        alert('Interest sent successfully! 💝')
-      } else {
-        alert(data.message || 'Failed to send interest')
-      }
-    } catch (error) {
-      console.error('Error sending interest:', error)
-      alert('An error occurred')
+      const res = await fetch(`${API_URL}/interests`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      setInterests(data.interests || [])
+    } catch (err) {
+      console.error(err)
     }
   }
 
-  // Add to shortlist
+  const handleShowInterest = async (matchId) => {
+    try {
+      const token = localStorage.getItem('token')
+      const match = matches.find(m => m._id === matchId)
+      if (!match) return alert('Match not found')
+
+      // Check if interest already exists
+      const existing = interests.find(i => i.to === match.user)
+      if (existing && existing.status === 'pending') {
+        return alert('Interest already sent. Waiting for acceptance.')
+      }
+
+      const res = await fetch(`${API_URL}/interests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ to: match.user })
+      })
+      const data = await res.json()
+      if (!res.ok) return alert(data.message || 'Failed to send interest')
+
+      if (data.mutual) {
+        alert(`You are now friends with ${match.fullName}! 💖`)
+        navigate(`/chat/${data.chatId}`)
+      } else {
+        alert(`Interest sent to ${match.fullName}. Waiting for acceptance.`)
+      }
+
+      fetchInterests()
+    } catch (err) {
+      console.error(err)
+      alert('Error sending interest')
+    }
+  }
+
   const handleShortlist = async (matchId) => {
     try {
       const token = localStorage.getItem('token')
-      
-      const response = await fetch(`${API_URL}/interests/shortlist/add`, {
+      const res = await fetch(`${API_URL}/interests/shortlist/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,64 +111,30 @@ function Matches() {
         },
         body: JSON.stringify({ profileId: matchId })
       })
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        alert('Added to shortlist! ⭐')
-      } else {
-        alert(data.message || 'Failed to add to shortlist')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      alert('An error occurred')
+      const data = await res.json()
+      if (!res.ok) return alert(data.message || 'Failed to add to shortlist')
+      alert('Added to shortlist ⭐')
+    } catch (err) {
+      console.error(err)
+      alert('Error adding to shortlist')
     }
   }
 
-  // View profile My pro 
-  const handleViewProfile = (match) => {
-    setSelectedMatch(match)
-    setShowProfileModal(true)
+  const getInterestStatus = (match) => {
+    const interest = interests.find(i => i.to === match.user)
+    if (!interest) return null
+    return interest.status // pending / accepted / rejected
   }
 
-  // Filter matches
-  const filteredMatches = matches.filter(match => {
-    if (activeFilter === 'online' && !match.online) return false
-    if (activeFilter === 'verified' && !match.verified) return false
-    if (filters.religion && match.religion !== filters.religion) return false
-    if (filters.location && !match.location.includes(filters.location)) return false
-    if (filters.education && !match.education.includes(filters.education)) return false
-    if (filters.profession && !match.profession.includes(filters.profession)) return false
-    if (match.age < ageRange[0] || match.age > ageRange[1]) return false
+  const filteredMatches = matches.filter(m => {
+    if (activeFilter === 'online' && !m.online) return false
+    if (activeFilter === 'verified' && !m.verified) return false
+    if (m.age < ageRange[0] || m.age > ageRange[1]) return false
     return true
   })
 
-  // Reset filters
-  const resetFilters = () => {
-    setFilters({
-      religion: '',
-      location: '',
-      education: '',
-      profession: '',
-      maritalStatus: ''
-    })
-    setAgeRange([20, 35])
-    setActiveFilter('all')
-    fetchMatches()
-  }
+  if (loading) return <div className="matches-page"><Navbar /><p>Loading...</p></div>
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="matches-page">
-        <Navbar />
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading matches...</p>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="matches-page">
