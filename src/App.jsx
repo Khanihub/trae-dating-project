@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import Navbar from "./components/Navbar";
@@ -6,17 +6,30 @@ import Hero from "./components/Hero";
 import Features from "./components/Features";
 import Testimonials from "./components/Testimonials";
 import Footer from "./components/Footer";
+import NotificationBell from "./components/NotificationBell";
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard.jsx";
 import Profile from "./pages/Profile";
-import Matches from './pages/Matches'
-import Messages from './pages/Messages'  
-import Settings from './pages/Settings.jsx'
+import Matches from './pages/Matches';
+import Messages from './pages/Messages';
+import Settings from './pages/Settings.jsx';
 
-import './index.css'; // Import plain CSS
+import './index.css';
+
+// Component to conditionally show NotificationBell
+function ConditionalNotificationBell() {
+  const location = useLocation();
+  const token = localStorage.getItem('token');
+  
+  // Only show notification bell if user is logged in
+  // and NOT on login/register pages
+  const showBell = token && location.pathname !== '/login' && location.pathname !== '/register';
+  
+  return showBell ? <NotificationBell /> : null;
+}
 
 function App() {
   const [dark, setDark] = useState(false);
@@ -76,6 +89,9 @@ function App() {
 
         {/* Footer always visible */}
         <Footer />
+
+        {/* Floating Notification Bell - Only show when logged in */}
+        <ConditionalNotificationBell />
       </div>
     </Router>
   );

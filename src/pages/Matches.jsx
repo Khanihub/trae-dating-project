@@ -1,180 +1,185 @@
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import Navbar from "../components/Navbar"
-import Footer from "../components/Footer"
-import "./Matches.css"
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import "./Matches.css";
 
 // Use your environment variable OR fallback
-const API_URL = import.meta.env.VITE_API || 'http://localhost:5000/api'
+const API_URL = import.meta.env.VITE_API || "http://localhost:5000/api";
 
 function Matches() {
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   // States
-  const [isVisible, setIsVisible] = useState(false)
-  const [matches, setMatches] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [ageRange, setAgeRange] = useState([20, 35])
-  const [showFilters, setShowFilters] = useState(false)
-  const [selectedMatch, setSelectedMatch] = useState(null)
-  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [isVisible, setIsVisible] = useState(false);
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [ageRange, setAgeRange] = useState([20, 35]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   const [filters, setFilters] = useState({
-    religion: '',
-    location: '',
-    education: '',
-    profession: '',
-    maritalStatus: ''
-  })
+    religion: "",
+    location: "",
+    education: "",
+    profession: "",
+    maritalStatus: "",
+  });
 
   // Check authentication on mount
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem("token");
     if (!token) {
-      navigate('/login')
-      return
+      navigate("/login");
+      return;
     }
-    
-    fetchMatches()
-    setTimeout(() => setIsVisible(true), 100)
-  }, [navigate])
+
+    fetchMatches();
+    setTimeout(() => setIsVisible(true), 100);
+  }, [navigate]);
 
   // Fetch matches from API
   const fetchMatches = async () => {
     try {
-      setLoading(true)
-      const token = localStorage.getItem('token')
-      
-      console.log('Fetching matches from:', `${API_URL}/matches/browse`)
-      
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      console.log("Fetching matches from:", `${API_URL}/matches/browse`);
+
       const response = await fetch(`${API_URL}/matches/browse`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      
-      console.log('Response status:', response.status)
-      
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Response status:", response.status);
+
       if (response.ok) {
-        const data = await response.json()
-        console.log('Fetched matches:', data)
-        setMatches(data.matches || [])
+        const data = await response.json();
+        console.log("Fetched matches:", data);
+        setMatches(data.matches || []);
       } else {
-        const errorData = await response.json()
-        console.error('API Error:', errorData)
-        
+        const errorData = await response.json();
+        console.error("API Error:", errorData);
+
         if (response.status === 401) {
-          alert('Please login again')
-          navigate('/login')
+          alert("Please login again");
+          navigate("/login");
         } else if (response.status === 404) {
-          alert(errorData.message || 'Please complete your profile first')
-          navigate('/profile')
+          alert(errorData.message || "Please complete your profile first");
+          navigate("/profile");
         } else {
-          alert(errorData.message || 'Failed to load matches')
+          alert(errorData.message || "Failed to load matches");
         }
       }
     } catch (error) {
-      console.error('Error fetching matches:', error)
-      alert('Error loading matches. Check if backend is running on port 5000')
+      console.error("Error fetching matches:", error);
+      alert("Error loading matches. Check if backend is running on port 5000");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Send interest
-  const handleShowInterest = async (matchId) => {
-    try {
-      const token = localStorage.getItem('token')
-      const match = matches.find(m => m.id === matchId)
-      
-      if (!match) {
-        alert('Match not found')
-        return
-      }
-
-      console.log('Sending interest to userId:', match.userId)
-
-      const response = await fetch(`${API_URL}/interest/${match.userId}`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  }
-})
-
-      
-      const data = await response.json()
-      
-      if (response.ok) {
-        alert('Interest sent successfully! 💝')
-      } else {
-        alert(data.message || 'Failed to send interest')
-      }
-    } catch (error) {
-      console.error('Error sending interest:', error)
-      alert('An error occurred')
+const handleShowInterest = async (matchId) => {
+  try {
+    const token = localStorage.getItem('token')
+    const match = matches.find(m => m.id === matchId)
+    
+    if (!match) {
+      alert('Match not found')
+      return
     }
+
+    console.log('Sending interest to userId:', match.userId)
+
+    const response = await fetch(`${API_URL}/interests`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ to: match.userId })
+    })
+    
+    const data = await response.json()
+    console.log('Full API Response:', data)  // ← ADD THIS
+    
+    if (response.ok) {
+      alert('Interest sent successfully! 💝')
+    } else {
+      alert(data.message || 'Failed to send interest')  // ← This shows the error
+      console.error('Error details:', data)  // ← ADD THIS
+    }
+  } catch (error) {
+    console.error('Error sending interest:', error)
+    alert('An error occurred')
   }
+}
 
   // Add to shortlist
   const handleShortlist = async (matchId) => {
     try {
-      const token = localStorage.getItem('token')
-      
+      const token = localStorage.getItem("token");
+
       const response = await fetch(`${API_URL}/interests/shortlist/add`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ profileId: matchId })
-      })
-      
-      const data = await response.json()
-      
+        body: JSON.stringify({ profileId: matchId }),
+      });
+
+      const data = await response.json();
+
       if (response.ok) {
-        alert('Added to shortlist! ⭐')
+        alert("Added to shortlist! ⭐");
       } else {
-        alert(data.message || 'Failed to add to shortlist')
+        alert(data.message || "Failed to add to shortlist");
       }
     } catch (error) {
-      console.error('Error:', error)
-      alert('An error occurred')
+      console.error("Error:", error);
+      alert("An error occurred");
     }
-  }
+  };
 
-  // View profile My pro 
+  // View profile My pro
   const handleViewProfile = (match) => {
-    setSelectedMatch(match)
-    setShowProfileModal(true)
-  }
+    setSelectedMatch(match);
+    setShowProfileModal(true);
+  };
 
   // Filter matches
-  const filteredMatches = matches.filter(match => {
-    if (activeFilter === 'online' && !match.online) return false
-    if (activeFilter === 'verified' && !match.verified) return false
-    if (filters.religion && match.religion !== filters.religion) return false
-    if (filters.location && !match.location.includes(filters.location)) return false
-    if (filters.education && !match.education.includes(filters.education)) return false
-    if (filters.profession && !match.profession.includes(filters.profession)) return false
-    if (match.age < ageRange[0] || match.age > ageRange[1]) return false
-    return true
-  })
+  const filteredMatches = matches.filter((match) => {
+    if (activeFilter === "online" && !match.online) return false;
+    if (activeFilter === "verified" && !match.verified) return false;
+    if (filters.religion && match.religion !== filters.religion) return false;
+    if (filters.location && !match.location.includes(filters.location))
+      return false;
+    if (filters.education && !match.education.includes(filters.education))
+      return false;
+    if (filters.profession && !match.profession.includes(filters.profession))
+      return false;
+    if (match.age < ageRange[0] || match.age > ageRange[1]) return false;
+    return true;
+  });
 
   // Reset filters
   const resetFilters = () => {
     setFilters({
-      religion: '',
-      location: '',
-      education: '',
-      profession: '',
-      maritalStatus: ''
-    })
-    setAgeRange([20, 35])
-    setActiveFilter('all')
-    fetchMatches()
-  }
+      religion: "",
+      location: "",
+      education: "",
+      profession: "",
+      maritalStatus: "",
+    });
+    setAgeRange([20, 35]);
+    setActiveFilter("all");
+    fetchMatches();
+  };
 
   // Loading state
   if (loading) {
@@ -186,7 +191,7 @@ function Matches() {
           <p>Loading matches...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -195,53 +200,60 @@ function Matches() {
 
       <main className="matches-main">
         {/* Header */}
-        <div className={`matches-header ${isVisible ? 'visible' : ''}`}>
+        <div className={`matches-header ${isVisible ? "visible" : ""}`}>
           <div className="header-bg-circle circle-1"></div>
           <div className="header-bg-circle circle-2"></div>
           <div className="header-bg-circle circle-3"></div>
-          
+
           <div className="header-content">
             <h1>Find Your Perfect Match</h1>
-            <p>Discover compatible profiles and start your journey to happily ever after 💕</p>
+            <p>
+              Discover compatible profiles and start your journey to happily
+              ever after 💕
+            </p>
           </div>
         </div>
 
         {/* Filter Section */}
-        <div className={`filter-section ${isVisible ? 'visible' : ''}`}>
+        <div className={`filter-section ${isVisible ? "visible" : ""}`}>
           <div className="filter-header">
             <div className="filter-tabs">
-              <button 
-                className={`filter-tab ${activeFilter === 'all' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('all')}
+              <button
+                className={`filter-tab ${activeFilter === "all" ? "active" : ""}`}
+                onClick={() => setActiveFilter("all")}
               >
                 <span className="tab-icon">👥</span>
                 All Matches
                 <span className="tab-count">{matches.length}</span>
               </button>
-              <button 
-                className={`filter-tab ${activeFilter === 'online' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('online')}
+              <button
+                className={`filter-tab ${activeFilter === "online" ? "active" : ""}`}
+                onClick={() => setActiveFilter("online")}
               >
                 <span className="tab-icon">🟢</span>
                 Online Now
-                <span className="tab-count">{matches.filter(m => m.online).length}</span>
+                <span className="tab-count">
+                  {matches.filter((m) => m.online).length}
+                </span>
               </button>
-              <button 
-                className={`filter-tab ${activeFilter === 'verified' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('verified')}
+              <button
+                className={`filter-tab ${activeFilter === "verified" ? "active" : ""}`}
+                onClick={() => setActiveFilter("verified")}
               >
                 <span className="tab-icon">✓</span>
                 Verified
-                <span className="tab-count">{matches.filter(m => m.verified).length}</span>
+                <span className="tab-count">
+                  {matches.filter((m) => m.verified).length}
+                </span>
               </button>
             </div>
-            
-            <button 
+
+            <button
               className="toggle-filters-btn"
               onClick={() => setShowFilters(!showFilters)}
             >
               <span>🔍</span>
-              {showFilters ? 'Hide Filters' : 'Show Filters'}
+              {showFilters ? "Hide Filters" : "Show Filters"}
             </button>
           </div>
 
@@ -250,12 +262,16 @@ function Matches() {
             <div className="advanced-filters">
               <div className="filters-grid">
                 <div className="filter-group">
-                  <label>Age Range: {ageRange[0]} - {ageRange[1]}</label>
+                  <label>
+                    Age Range: {ageRange[0]} - {ageRange[1]}
+                  </label>
                   <div className="age-range-inputs">
                     <input
                       type="number"
                       value={ageRange[0]}
-                      onChange={(e) => setAgeRange([parseInt(e.target.value), ageRange[1]])}
+                      onChange={(e) =>
+                        setAgeRange([parseInt(e.target.value), ageRange[1]])
+                      }
                       min="18"
                       max="60"
                     />
@@ -263,7 +279,9 @@ function Matches() {
                     <input
                       type="number"
                       value={ageRange[1]}
-                      onChange={(e) => setAgeRange([ageRange[0], parseInt(e.target.value)])}
+                      onChange={(e) =>
+                        setAgeRange([ageRange[0], parseInt(e.target.value)])
+                      }
                       min="18"
                       max="60"
                     />
@@ -272,9 +290,11 @@ function Matches() {
 
                 <div className="filter-group">
                   <label>Religion</label>
-                  <select 
+                  <select
                     value={filters.religion}
-                    onChange={(e) => setFilters({...filters, religion: e.target.value})}
+                    onChange={(e) =>
+                      setFilters({ ...filters, religion: e.target.value })
+                    }
                   >
                     <option value="">All Religions</option>
                     <option value="Muslim">Muslim</option>
@@ -286,9 +306,11 @@ function Matches() {
 
                 <div className="filter-group">
                   <label>Location</label>
-                  <select 
+                  <select
                     value={filters.location}
-                    onChange={(e) => setFilters({...filters, location: e.target.value})}
+                    onChange={(e) =>
+                      setFilters({ ...filters, location: e.target.value })
+                    }
                   >
                     <option value="">All Locations</option>
                     <option value="Islamabad">Islamabad</option>
@@ -300,9 +322,11 @@ function Matches() {
 
                 <div className="filter-group">
                   <label>Education</label>
-                  <select 
+                  <select
                     value={filters.education}
-                    onChange={(e) => setFilters({...filters, education: e.target.value})}
+                    onChange={(e) =>
+                      setFilters({ ...filters, education: e.target.value })
+                    }
                   >
                     <option value="">All Education Levels</option>
                     <option value="Bachelor">Bachelor's Degree</option>
@@ -318,7 +342,9 @@ function Matches() {
                     type="text"
                     placeholder="e.g., Engineer, Doctor"
                     value={filters.profession}
-                    onChange={(e) => setFilters({...filters, profession: e.target.value})}
+                    onChange={(e) =>
+                      setFilters({ ...filters, profession: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -327,7 +353,10 @@ function Matches() {
                 <button className="btn-reset" onClick={resetFilters}>
                   Reset Filters
                 </button>
-                <button className="btn-apply" onClick={() => setShowFilters(false)}>
+                <button
+                  className="btn-apply"
+                  onClick={() => setShowFilters(false)}
+                >
                   Apply Filters
                 </button>
               </div>
@@ -336,22 +365,29 @@ function Matches() {
         </div>
 
         {/* Results Info */}
-        <div className={`results-info ${isVisible ? 'visible' : ''}`}>
-          <p>Showing <strong>{filteredMatches.length}</strong> matches based on your preferences</p>
+        <div className={`results-info ${isVisible ? "visible" : ""}`}>
+          <p>
+            Showing <strong>{filteredMatches.length}</strong> matches based on
+            your preferences
+          </p>
         </div>
 
         {/* Matches Grid */}
-        <div className={`matches-grid ${isVisible ? 'visible' : ''}`}>
+        <div className={`matches-grid ${isVisible ? "visible" : ""}`}>
           {filteredMatches.length > 0 ? (
             filteredMatches.map((match, index) => (
-              <div 
-                key={match.id} 
+              <div
+                key={match.id}
                 className="match-card"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Profile Image */}
                 <div className="match-image-container">
-                  <img src={match.image} alt={match.name} className="match-image" />
+                  <img
+                    src={match.image}
+                    alt={match.name}
+                    className="match-image"
+                  />
                   {match.online && <div className="online-badge">Online</div>}
                   {match.verified && (
                     <div className="verified-badge" title="Verified Profile">
@@ -364,7 +400,7 @@ function Matches() {
                 <div className="match-info">
                   <h3 className="match-name">{match.name}</h3>
                   <p className="match-age">{match.age} years old</p>
-                  
+
                   <div className="match-details">
                     <div className="detail-item">
                       <span className="detail-icon">💼</span>
@@ -384,31 +420,36 @@ function Matches() {
                     </div>
                   </div>
 
-                  <p className="match-about">{match.about.substring(0, 100)}...</p>
+                  <p className="match-about">
+                    {match.about.substring(0, 100)}...
+                  </p>
 
                   {/* Interests */}
                   <div className="match-interests">
-                    {match.interests && match.interests.slice(0, 3).map((interest, idx) => (
-                      <span key={idx} className="interest-tag">{interest}</span>
-                    ))}
+                    {match.interests &&
+                      match.interests.slice(0, 3).map((interest, idx) => (
+                        <span key={idx} className="interest-tag">
+                          {interest}
+                        </span>
+                      ))}
                   </div>
 
                   {/* Actions */}
                   <div className="match-actions">
-                    <button 
+                    <button
                       className="btn-view-profile"
                       onClick={() => handleViewProfile(match)}
                     >
                       View Profile
                     </button>
-                    <button 
+                    <button
                       className="btn-icon"
                       onClick={() => handleShortlist(match.id)}
                       title="Add to Shortlist"
                     >
                       ⭐
                     </button>
-                    <button 
+                    <button
                       className="btn-interest"
                       onClick={() => handleShowInterest(match.id)}
                     >
@@ -432,9 +473,12 @@ function Matches() {
 
         {/* Profile Modal */}
         {showProfileModal && selectedMatch && (
-          <div className="modal-overlay" onClick={() => setShowProfileModal(false)}>
+          <div
+            className="modal-overlay"
+            onClick={() => setShowProfileModal(false)}
+          >
             <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-              <button 
+              <button
                 className="modal-close"
                 onClick={() => setShowProfileModal(false)}
               >
@@ -445,17 +489,25 @@ function Matches() {
                 <div className="modal-header-section">
                   <div className="modal-image-container">
                     <img src={selectedMatch.image} alt={selectedMatch.name} />
-                    {selectedMatch.online && <div className="online-badge large">Online</div>}
+                    {selectedMatch.online && (
+                      <div className="online-badge large">Online</div>
+                    )}
                   </div>
-                  
+
                   <div className="modal-header-info">
                     <h2>
                       {selectedMatch.name}
-                      {selectedMatch.verified && <span className="verified-icon">✓</span>}
+                      {selectedMatch.verified && (
+                        <span className="verified-icon">✓</span>
+                      )}
                     </h2>
                     <p className="modal-age">{selectedMatch.age} years old</p>
-                    <p className="modal-profession">{selectedMatch.profession}</p>
-                    <p className="modal-location">📍 {selectedMatch.location}</p>
+                    <p className="modal-profession">
+                      {selectedMatch.profession}
+                    </p>
+                    <p className="modal-location">
+                      📍 {selectedMatch.location}
+                    </p>
                   </div>
                 </div>
 
@@ -470,19 +522,27 @@ function Matches() {
                     <div className="info-grid">
                       <div className="info-item">
                         <span className="info-label">Education:</span>
-                        <span className="info-value">{selectedMatch.education}</span>
+                        <span className="info-value">
+                          {selectedMatch.education}
+                        </span>
                       </div>
                       <div className="info-item">
                         <span className="info-label">Height:</span>
-                        <span className="info-value">{selectedMatch.height}</span>
+                        <span className="info-value">
+                          {selectedMatch.height}
+                        </span>
                       </div>
                       <div className="info-item">
                         <span className="info-label">Religion:</span>
-                        <span className="info-value">{selectedMatch.religion}</span>
+                        <span className="info-value">
+                          {selectedMatch.religion}
+                        </span>
                       </div>
                       <div className="info-item">
                         <span className="info-label">Marital Status:</span>
-                        <span className="info-value">{selectedMatch.maritalStatus}</span>
+                        <span className="info-value">
+                          {selectedMatch.maritalStatus}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -490,21 +550,24 @@ function Matches() {
                   <div className="modal-section">
                     <h3>Interests</h3>
                     <div className="interests-list">
-                      {selectedMatch.interests && selectedMatch.interests.map((interest, idx) => (
-                        <span key={idx} className="interest-badge">{interest}</span>
-                      ))}
+                      {selectedMatch.interests &&
+                        selectedMatch.interests.map((interest, idx) => (
+                          <span key={idx} className="interest-badge">
+                            {interest}
+                          </span>
+                        ))}
                     </div>
                   </div>
                 </div>
 
                 <div className="modal-actions">
-                  <button 
+                  <button
                     className="btn-modal-shortlist"
                     onClick={() => handleShortlist(selectedMatch.id)}
                   >
                     ⭐ Shortlist
                   </button>
-                  <button 
+                  <button
                     className="btn-modal-interest"
                     onClick={() => handleShowInterest(selectedMatch.id)}
                   >
@@ -515,11 +578,9 @@ function Matches() {
             </div>
           </div>
         )}
-
       </main>
-
     </div>
-  )
+  );
 }
 
-export default Matches
+export default Matches;
