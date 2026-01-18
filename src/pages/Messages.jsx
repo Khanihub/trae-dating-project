@@ -2,8 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Footer from '../components/Footer'
 import './Messages.css'
+import { io } from 'socket.io-client'
 
 const API_BASE = import.meta.env.VITE_API || 'http://localhost:5000/api'
+const SOCKET_URL = import.meta.env.VITE_API_BASE || 'http://localhost:5000'
+
+const socket = io(SOCKET_URL)
 
 function Messages() {
   const navigate = useNavigate()
@@ -19,6 +23,9 @@ function Messages() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
 
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (!token) return navigate('/login')
@@ -30,10 +37,6 @@ function Messages() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   const fetchConversations = async (token) => {
     try {
@@ -58,60 +61,70 @@ function Messages() {
   }
 
   const fetchMessages = async (matchId) => {
-    try {
-      const token = localStorage.getItem('token')
-      const res = await fetch(`${API_BASE}/messages/${matchId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`${API_BASE}/messages/${matchId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
 
-      const data = await res.json()
-      console.log('Messages response:', data)
-      
-      if (data.success && data.messages) {
-        setMessages(data.messages)
-      } else {
-        setMessages([])
-      }
-      setSelectedChat(matchId)
-    } catch (err) {
-      console.error('Error fetching messages:', err)
-      setMessages([])
-    }
+    const data = await res.json()
+    setMessages(data.success && data.messages ? data.messages : [])
+    setSelectedChat(matchId)
+
+    // Join Socket.IO room
+    socket.emit('joinChat', matchId)
+  } catch (err) {
+    console.error('Error fetching messages:', err)
+    setMessages([])
   }
+}
+
 
   const handleSendMessage = async (e) => {
-    e.preventDefault()
-    if (!messageText.trim() || !selectedChat) return
+  e.preventDefault()
+  if (!messageText.trim() || !selectedChat) return
 
-    setSending(true)
-    const token = localStorage.getItem('token')
+  setSending(true)
+  const token = localStorage.getItem('token')
 
-    try {
-      const res = await fetch(`${API_BASE}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          matchId: selectedChat,
-          text: messageText.trim()
-        })
-      })
-
-      const data = await res.json()
-      console.log('Send message response:', data)
-
-      if (data.success) {
-        setMessages(prev => [...prev, data.message])
-        setMessageText('')
-      }
-    } catch (err) {
-      console.error('Error sending message:', err)
-    } finally {
-      setSending(false)
-    }
+  const newMessage = {
+    matchId: selectedChat,
+    text: messageText.trim(),
+    isMine: true,
+    createdAt: new Date()
   }
+
+  // Instant UI update
+  setMessages(prev => [...prev, newMessage])
+  setMessageText('')
+
+  try {
+    const res = await fetch(`${API_BASE}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        matchId: selectedChat,
+        text: messageText.trim()
+      })
+    })
+
+    const data = await res.json()
+    if (data.success) {
+      // Emit to Socket.IO for other users
+      socket.emit('sendMessage', data.message)
+    } else {
+      console.error('Failed to send message:', data)
+    }
+  } catch (err) {
+    console.error('Error sending message:', err)
+  } finally {
+    setSending(false)
+  }
+}
+
 
   const handleEmojiClick = (emoji) => {
     setMessageText(prev => prev + emoji)
@@ -121,29 +134,23 @@ function Messages() {
   const getTimeAgo = (date) => {
     const now = new Date()
     const messageDate = new Date(date)
-    const diffInMs = now - messageDate
-    const diffInMins = Math.floor(diffInMs / 60000)
-
+    const diffInMins = Math.floor((now - messageDate) / 60000)
     if (diffInMins < 1) return 'Just now'
     if (diffInMins < 60) return `${diffInMins}m ago`
-    
     const diffInHours = Math.floor(diffInMins / 60)
     if (diffInHours < 24) return `${diffInHours}h ago`
-    
     const diffInDays = Math.floor(diffInHours / 24)
     if (diffInDays === 1) return 'Yesterday'
     if (diffInDays < 7) return `${diffInDays}d ago`
-    
     return messageDate.toLocaleDateString()
   }
 
   const filteredConversations = conversations.filter(conv =>
     conv.user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   )
-
   const selectedConversation = conversations.find(c => c.matchId === selectedChat)
+  const emojis = ['😊','😂','❤️','👍','🎉','😍','🙏','😢','😮','🔥']
 
-  const emojis = ['😊', '😂', '❤️', '👍', '🎉', '😍', '🙏', '😢', '😮', '🔥']
 
   return (
     <div className="messages-page">
