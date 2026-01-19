@@ -10,6 +10,8 @@ function Settings() {
   const [activeTab, setActiveTab] = useState('profile')
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const tabs = [
     { id: 'profile', name: 'Profile Info', icon: '👤' },
@@ -49,6 +51,17 @@ function Settings() {
     confirmPassword: ''
   })
 
+  // Helper function to show messages
+  const showMessage = (message, isError = false) => {
+    if (isError) {
+      setErrorMessage(message)
+      setTimeout(() => setErrorMessage(''), 3000)
+    } else {
+      setShowSuccessMessage(true)
+      setTimeout(() => setShowSuccessMessage(false), 3000)
+    }
+  }
+
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (!token) return navigate("/login")
@@ -56,7 +69,10 @@ function Settings() {
     fetch(`${API}/settings`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load settings')
+        return res.json()
+      })
       .then(data => {
         setProfileData({
           fullName: data.name || "",
@@ -82,69 +98,181 @@ function Settings() {
           promotions: data.notificationSettings?.promotions ?? false
         })
       })
-      .catch(() => navigate("/login"))
+      .catch(() => {
+        showMessage('Failed to load settings', true)
+        navigate("/login")
+      })
 
     setTimeout(() => setIsVisible(true), 100)
   }, [navigate])
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault()
+    setLoading(true)
     const token = localStorage.getItem("token")
-    await fetch(`${API}/settings/profile`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(profileData)
-    })
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
+    
+    try {
+      const res = await fetch(`${API}/settings/profile`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(profileData)
+      })
+
+      const data = await res.json()
+      
+      if (!res.ok) throw new Error(data.message || 'Update failed')
+      
+      showMessage('Profile updated successfully!')
+    } catch (error) {
+      showMessage(error.message, true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handlePasswordChange = async (e) => {
     e.preventDefault()
-    if (passwordData.newPassword !== passwordData.confirmPassword) return alert("Passwords do not match")
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return showMessage("Passwords do not match", true)
+    }
+    
+    setLoading(true)
     const token = localStorage.getItem("token")
-    await fetch(`${API}/settings/password`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(passwordData)
-    })
-    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
+    
+    try {
+      const res = await fetch(`${API}/settings/password`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(passwordData)
+      })
+
+      const data = await res.json()
+      
+      if (!res.ok) throw new Error(data.message || 'Password update failed')
+      
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+      showMessage('Password updated successfully!')
+    } catch (error) {
+      showMessage(error.message, true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handlePrivacyUpdate = async () => {
+    setLoading(true)
     const token = localStorage.getItem("token")
-    await fetch(`${API}/settings/privacy`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(privacySettings)
-    })
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
+    
+    try {
+      const res = await fetch(`${API}/settings/privacy`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(privacySettings)
+      })
+
+      const data = await res.json()
+      
+      if (!res.ok) throw new Error(data.message || 'Privacy update failed')
+      
+      // 👇 STATE UPDATE WITH RESPONSE DATA
+      if (data.privacySettings) {
+        setPrivacySettings(data.privacySettings)
+      }
+      
+      showMessage('Privacy settings updated!')
+    } catch (error) {
+      showMessage(error.message, true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleNotificationUpdate = async () => {
+    setLoading(true)
     const token = localStorage.getItem("token")
-    await fetch(`${API}/settings/notifications`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(notificationSettings)
-    })
-    setShowSuccessMessage(true)
-    setTimeout(() => setShowSuccessMessage(false), 3000)
+    
+    try {
+      const res = await fetch(`${API}/settings/notifications`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(notificationSettings)
+      })
+
+      const data = await res.json()
+      
+      if (!res.ok) throw new Error(data.message || 'Notification update failed')
+      
+      // 👇 STATE UPDATE WITH RESPONSE DATA
+      if (data.notificationSettings) {
+        setNotificationSettings(data.notificationSettings)
+      }
+      
+      showMessage('Notification settings updated!')
+    } catch (error) {
+      showMessage(error.message, true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDeleteAccount = async () => {
+    setLoading(true)
     const token = localStorage.getItem("token")
-    await fetch(`${API}/settings/delete`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } })
-    localStorage.removeItem("token")
-    navigate("/login")
+    
+    try {
+      const res = await fetch(`${API}/settings/delete`, { 
+        method: "DELETE", 
+        headers: { Authorization: `Bearer ${token}` } 
+      })
+
+      if (!res.ok) throw new Error('Delete failed')
+      
+      localStorage.removeItem("token")
+      navigate("/login")
+    } catch (error) {
+      showMessage(error.message, true)
+      setShowDeleteConfirm(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeactivateAccount = async () => {
+    setLoading(true)
+    const token = localStorage.getItem("token")
+    
+    try {
+      const res = await fetch(`${API}/settings/deactivate`, { 
+        method: "PUT", 
+        headers: { Authorization: `Bearer ${token}` } 
+      })
+
+      if (!res.ok) throw new Error('Deactivation failed')
+      
+      localStorage.removeItem("token")
+      navigate("/login")
+    } catch (error) {
+      showMessage(error.message, true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="settings-page">
-  
       <main className="settings-main">
         {/* Header */}
         <div className={`settings-header ${isVisible ? 'visible' : ''}`}>
@@ -165,6 +293,18 @@ function Settings() {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <p>Settings updated successfully!</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="error-message">
+            <div className="error-content">
+              <svg className="error-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <p>{errorMessage}</p>
             </div>
           </div>
         )}
@@ -256,8 +396,8 @@ function Settings() {
                     </div>
 
                     <div className="form-actions">
-                      <button type="submit" className="btn-primary">
-                        Save Changes
+                      <button type="submit" className="btn-primary" disabled={loading}>
+                        {loading ? 'Saving...' : 'Save Changes'}
                       </button>
                     </div>
                   </form>
@@ -311,8 +451,8 @@ function Settings() {
                       </p>
                     </div>
 
-                    <button type="submit" className="btn-primary full-width">
-                      Update Password
+                    <button type="submit" className="btn-primary full-width" disabled={loading}>
+                      {loading ? 'Updating...' : 'Update Password'}
                     </button>
                   </form>
                 </div>
@@ -427,8 +567,8 @@ function Settings() {
                     </div>
 
                     <div className="form-actions">
-                      <button onClick={handlePrivacyUpdate} className="btn-primary">
-                        Save Privacy Settings
+                      <button onClick={handlePrivacyUpdate} className="btn-primary" disabled={loading}>
+                        {loading ? 'Saving...' : 'Save Privacy Settings'}
                       </button>
                     </div>
                   </div>
@@ -539,8 +679,8 @@ function Settings() {
                     </div>
 
                     <div className="form-actions">
-                      <button onClick={handleNotificationUpdate} className="btn-primary">
-                        Save Notification Settings
+                      <button onClick={handleNotificationUpdate} className="btn-primary" disabled={loading}>
+                        {loading ? 'Saving...' : 'Save Notification Settings'}
                       </button>
                     </div>
                   </div>
@@ -566,7 +706,7 @@ function Settings() {
                         <li>You won't be able to recover your account</li>
                         <li>Other users won't be able to see your profile</li>
                       </ul>
-                      <button onClick={() => setShowDeleteConfirm(true)} className="btn-danger">
+                      <button onClick={() => setShowDeleteConfirm(true)} className="btn-danger" disabled={loading}>
                         Delete My Account
                       </button>
                     </div>
@@ -576,8 +716,8 @@ function Settings() {
                       <p>
                         Temporarily hide your profile from others. You can reactivate anytime.
                       </p>
-                      <button className="btn-warning">
-                        Deactivate Account
+                      <button onClick={handleDeactivateAccount} className="btn-warning" disabled={loading}>
+                        {loading ? 'Processing...' : 'Deactivate Account'}
                       </button>
                     </div>
                   </div>
@@ -600,11 +740,11 @@ function Settings() {
                 </p>
               </div>
               <div className="modal-actions">
-                <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary">
+                <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary" disabled={loading}>
                   Cancel
                 </button>
-                <button onClick={handleDeleteAccount} className="btn-danger">
-                  Delete
+                <button onClick={handleDeleteAccount} className="btn-danger" disabled={loading}>
+                  {loading ? 'Deleting...' : 'Delete'}
                 </button>
               </div>
             </div>
@@ -612,7 +752,6 @@ function Settings() {
         )}
 
       </main>
-
     </div>
   )
 }
