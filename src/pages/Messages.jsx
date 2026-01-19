@@ -43,7 +43,7 @@ function Messages() {
 
       const data = await res.json()
       console.log('Conversations response:', data)
-      
+
       if (data.success && data.conversations) {
         setConversations(data.conversations)
       } else {
@@ -66,7 +66,7 @@ function Messages() {
 
       const data = await res.json()
       console.log('Messages response:', data)
-      
+
       if (data.success && data.messages) {
         setMessages(data.messages)
       } else {
@@ -126,14 +126,14 @@ function Messages() {
 
     if (diffInMins < 1) return 'Just now'
     if (diffInMins < 60) return `${diffInMins}m ago`
-    
+
     const diffInHours = Math.floor(diffInMins / 60)
     if (diffInHours < 24) return `${diffInHours}h ago`
-    
+
     const diffInDays = Math.floor(diffInHours / 24)
     if (diffInDays === 1) return 'Yesterday'
     if (diffInDays < 7) return `${diffInDays}d ago`
-    
+
     return messageDate.toLocaleDateString()
   }
 
@@ -297,7 +297,7 @@ function Messages() {
                 </div>
 
                 {/* Message Input */}
-                <div className="message-input-container">
+                {/* <div className="message-input-container">
                   <form onSubmit={handleSendMessage} className="message-input-form">
                     <button
                       type="button"
@@ -343,7 +343,58 @@ function Messages() {
                       <span className="send-icon">➤</span>
                     </button>
                   </form>
+                </div> */}
+
+
+                <div className="message-input-container">
+                  <form
+                    onSubmit={handleSendMessage}
+                    className="message-input-form"
+                    noValidate
+                  >
+                    {/* INPUT BAR */}
+                    <div className="input-bar">
+                      <button
+                        type="button"
+                        className="emoji-btn"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      >
+                        😊
+                      </button>
+
+                      <input
+                        type="text"
+                        className="message-input"
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        placeholder="Type a message…"
+                        disabled={sending}
+                      />
+
+                      <button
+                        type="button"
+                        className="attach-btn"
+                        aria-label="Attach file"
+                      >
+                        📎
+                      </button>
+                    </div>
+
+                    {/* SEND BUTTON — OUTSIDE INPUT BAR */}
+                    <button
+                      type="submit"
+                      className="send-btn"
+                      disabled={!messageText.trim() || sending}
+                      aria-label="Send message"
+                    >
+                      <span className="send-icon">➤</span>
+                    </button>
+                  </form>
                 </div>
+
+
+
+
               </>
             )}
           </div>
