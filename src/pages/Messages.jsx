@@ -415,7 +415,7 @@ function Messages() {
                         }
                         alt={selectedConversation?.user?.name || "User"}
                       />
-                      <span className="online-indicator"></span>
+                      
                     </div>
                     <div className="chat-user-details">
                       <h3>
@@ -497,6 +497,14 @@ function Messages() {
                       😊
                     </button>
 
+                    <button
+                      type="button"
+                      className="attach-btn-inline"
+                      title="Attach file"
+                    >
+                      📎
+                    </button>
+
                     {showEmojiPicker && (
                       <div className="emoji-picker">
                         {emojis.map((emoji, idx) => (
@@ -520,14 +528,6 @@ function Messages() {
                       placeholder="Type a message..."
                       disabled={sending}
                     />
-
-                    <button
-                      type="button"
-                      className="attach-btn-inline"
-                      title="Attach file"
-                    >
-                      📎
-                    </button>
 
                     <button
                       type="submit"

@@ -249,10 +249,10 @@
   right: 2px;
   width: 0.875rem;
   height: 0.875rem;
-  background: #10b981;
+  background: #5ae661;
   border: 2px solid white;
   border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
+  animation: pulse-indicator 2s ease-in-out infinite;
 }
 
 .conv-details {
@@ -889,17 +889,15 @@
   }
 }
 
-@keyframes pulse {
+@keyframes pulse-indicator {
 
   0%,
   100% {
-    opacity: 1;
     transform: scale(1);
   }
 
   50% {
-    opacity: 0.8;
-    transform: scale(0.95);
+    transform: scale(0.90);
   }
 }
 
@@ -1058,6 +1056,7 @@
 
 .message-input-form-inline {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 0.5rem;
   position: relative;
