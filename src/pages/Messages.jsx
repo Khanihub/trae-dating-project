@@ -9,6 +9,7 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_B
 function Messages() {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null); // ⭐ FIXED: Added this ref
   const socketRef = useRef(null);
 
   const [conversations, setConversations] = useState([]);
@@ -29,6 +30,7 @@ function Messages() {
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         setCurrentUserId(payload.id);
+        console.log("Current user ID:", payload.id);
       } catch (err) {
         console.error("Error parsing token:", err);
       }
@@ -61,10 +63,22 @@ function Messages() {
       console.log("❌ Socket.IO disconnected");
     });
 
-    // Listen for new messages
+    // ⭐ FIXED: Listen for new messages with proper isMine detection
     socketRef.current.on("newMessage", (message) => {
       console.log("📩 New message received:", message);
-      setMessages((prev) => [...prev, message]);
+      console.log("Message sender ID:", message.sender?._id);
+      console.log("Current user ID:", currentUserId);
+      
+      // ⭐ Set correct isMine based on sender
+      const messageWithCorrectSide = {
+        ...message,
+        isMine: message.sender?._id === currentUserId || message.sender === currentUserId
+      };
+      
+      console.log("Setting isMine to:", messageWithCorrectSide.isMine);
+      
+      setMessages((prev) => [...prev, messageWithCorrectSide]);
+      
       // Auto scroll for new messages
       setTimeout(scrollToBottom, 100);
     });
@@ -84,14 +98,14 @@ function Messages() {
         socketRef.current.disconnect();
       }
     };
-  }, [navigate]);
+  }, [navigate, currentUserId]);
 
-  // Only scroll to bottom when chat is first opened
+  // Scroll to bottom when chat is first opened or messages change
   useEffect(() => {
     if (messages.length > 0 && selectedChat) {
       setTimeout(scrollToBottom, 300);
     }
-  }, [selectedChat]); // Only trigger when chat changes
+  }, [selectedChat, messages.length]);
 
   const fetchConversations = async (token) => {
     try {
@@ -123,12 +137,24 @@ function Messages() {
       });
 
       const data = await res.json();
-      setMessages(data.success && data.messages ? data.messages : []);
+      
+      if (data.success && data.messages) {
+        // ⭐ FIXED: Ensure each message has correct isMine flag
+        const messagesWithCorrectSide = data.messages.map(msg => ({
+          ...msg,
+          isMine: msg.sender._id === currentUserId || msg.sender === currentUserId
+        }));
+        setMessages(messagesWithCorrectSide);
+      } else {
+        setMessages([]);
+      }
+      
       setSelectedChat(matchId);
 
       // Join Socket.IO room for this chat
       if (socketRef.current) {
         socketRef.current.emit("joinChat", matchId);
+        console.log("Joined chat room:", matchId);
       }
     } catch (err) {
       console.error("Error fetching messages:", err);
@@ -174,13 +200,16 @@ function Messages() {
 
       const data = await res.json();
       if (data.success) {
+        console.log("✅ Message sent successfully:", data.message);
+        
         // Replace temp message with real one
         setMessages((prev) =>
           prev.map((msg) => (msg._id === tempId ? data.message : msg)),
         );
 
-        // Emit to Socket.IO for INSTANT delivery to other user
+        // ⭐ FIXED: Emit to Socket.IO for INSTANT delivery to other user
         if (socketRef.current) {
+          console.log("📤 Broadcasting message to room:", selectedChat);
           socketRef.current.emit("sendMessage", {
             matchId: selectedChat,
             message: data.message,
@@ -345,9 +374,7 @@ function Messages() {
                   >
                     <div className="conv-avatar-container">
                       <img
-                        src={
-                          conv.user?.image || "https://i.pravatar.cc/400?img=1"  //need to change fro default image
-                        }
+                        src={conv.user?.image || "https://i.pravatar.cc/400?img=1"}
                         alt={conv.user?.name || "User"}
                         className="conv-avatar"
                       />
@@ -415,7 +442,6 @@ function Messages() {
                         }
                         alt={selectedConversation?.user?.name || "User"}
                       />
-                      
                     </div>
                     <div className="chat-user-details">
                       <h3>
@@ -437,8 +463,8 @@ function Messages() {
                   </div>
                 </div>
 
-                {/* Messages Area */}
-                <div className="messages-area">
+                {/* Messages Area - ⭐ FIXED: Added ref */}
+                <div className="messages-area" ref={messagesContainerRef}>
                   <div className="messages-list">
                     {messages.length === 0 ? (
                       <div
@@ -483,7 +509,7 @@ function Messages() {
                   </div>
                 </div>
 
-                {/* Message Input - INLINE */}
+                {/* Message Input */}
                 <div className="message-input-container">
                   <form
                     onSubmit={handleSendMessage}
@@ -495,14 +521,6 @@ function Messages() {
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                     >
                       😊
-                    </button>
-
-                    <button
-                      type="button"
-                      className="attach-btn-inline"
-                      title="Attach file"
-                    >
-                      📎
                     </button>
 
                     {showEmojiPicker && (
@@ -528,6 +546,14 @@ function Messages() {
                       placeholder="Type a message..."
                       disabled={sending}
                     />
+
+                    <button
+                      type="button"
+                      className="attach-btn-inline"
+                      title="Attach file"
+                    >
+                      📎
+                    </button>
 
                     <button
                       type="submit"
