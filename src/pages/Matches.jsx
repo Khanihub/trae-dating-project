@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./Matches.css";
 
-// Use your environment variable OR fallback
 const API_URL = import.meta.env.VITE_API || "http://localhost:5000/api";
 
 function Matches() {
@@ -13,6 +12,7 @@ function Matches() {
   // States
   const [isVisible, setIsVisible] = useState(false);
   const [matches, setMatches] = useState([]);
+  const [friends, setFriends] = useState([]); // ⭐ NEW: Friends list
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
   const [ageRange, setAgeRange] = useState([20, 35]);
@@ -37,6 +37,7 @@ function Matches() {
     }
 
     fetchMatches();
+    fetchFriends(); // ⭐ NEW: Fetch friends
     setTimeout(() => setIsVisible(true), 100);
   }, [navigate]);
 
@@ -46,15 +47,11 @@ function Matches() {
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      console.log("Fetching matches from:", `${API_URL}/matches/browse`);
-
       const response = await fetch(`${API_URL}/matches/browse`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      console.log("Response status:", response.status);
 
       if (response.ok) {
         const data = await response.json();
@@ -76,48 +73,89 @@ function Matches() {
       }
     } catch (error) {
       console.error("Error fetching matches:", error);
-      alert("Error loading matches. Check if backend is running on port 5000");
+      alert("Error loading matches");
     } finally {
       setLoading(false);
     }
   };
 
+  // ⭐ NEW: Fetch friends (mutual interests)
+  const fetchFriends = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/matches/friends`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Fetched friends:", data);
+        setFriends(data.friends || []);
+      }
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+    }
+  };
+
   // Send interest
-const handleShowInterest = async (matchId) => {
-  try {
-    const token = localStorage.getItem('token')
-    const match = matches.find(m => m.id === matchId)
-    
-    if (!match) {
-      alert('Match not found')
-      return
-    }
+  const handleShowInterest = async (matchId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const match = matches.find((m) => m.id === matchId);
 
-    console.log('Sending interest to userId:', match.userId)
+      if (!match) {
+        alert("Match not found");
+        return;
+      }
 
-    const response = await fetch(`${API_URL}/interests`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ to: match.userId })
-    })
-    
-    const data = await response.json()
-    console.log('Full API Response:', data)  // ← ADD THIS
-    
-    if (response.ok) {
-      alert('Interest sent successfully! 💝')
-    } else {
-      alert(data.message || 'Failed to send interest')  // ← This shows the error
-      console.error('Error details:', data)  // ← ADD THIS
+      console.log("Sending interest to userId:", match.userId);
+
+      const response = await fetch(`${API_URL}/matches/interest/${match.userId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      console.log("Interest response:", data);
+
+      if (response.ok) {
+        // ⭐ Update match status to pending or friends
+        setMatches((prev) =>
+          prev.map((m) =>
+            m.id === matchId
+              ? {
+                  ...m,
+                  interestSent: true,
+                  status: data.match.status,
+                  matchId: data.match._id,
+                }
+              : m
+          )
+        );
+
+        if (data.match.isMutual) {
+          alert("You are now friends! 💝");
+          // Refresh friends list
+          fetchFriends();
+          // Refresh matches to remove this person from browse
+          fetchMatches();
+        } else {
+          alert("Interest sent successfully! ⏳");
+        }
+      } else {
+        alert(data.message || "Failed to send interest");
+      }
+    } catch (error) {
+      console.error("Error sending interest:", error);
+      alert("An error occurred");
     }
-  } catch (error) {
-    console.error('Error sending interest:', error)
-    alert('An error occurred')
-  }
-}
+  };
 
   // Add to shortlist
   const handleShortlist = async (matchId) => {
@@ -146,7 +184,12 @@ const handleShowInterest = async (matchId) => {
     }
   };
 
-  // View profile My pro
+  // ⭐ NEW: Navigate to messages
+  const handleMessageFriend = (matchId) => {
+    navigate("/messages"); // Navigate to messages page
+  };
+
+  // View profile
   const handleViewProfile = (match) => {
     setSelectedMatch(match);
     setShowProfileModal(true);
@@ -154,8 +197,6 @@ const handleShowInterest = async (matchId) => {
 
   // Filter matches
   const filteredMatches = matches.filter((match) => {
-    if (activeFilter === "online" && !match.online) return false;
-    if (activeFilter === "verified" && !match.verified) return false;
     if (filters.religion && match.religion !== filters.religion) return false;
     if (filters.location && !match.location.includes(filters.location))
       return false;
@@ -166,6 +207,11 @@ const handleShowInterest = async (matchId) => {
     if (match.age < ageRange[0] || match.age > ageRange[1]) return false;
     return true;
   });
+
+  // ⭐ Filter friends
+  const filteredFriends = friends.filter((friend) =>
+    friend.name?.toLowerCase().includes("")
+  );
 
   // Reset filters
   const resetFilters = () => {
@@ -180,6 +226,19 @@ const handleShowInterest = async (matchId) => {
     setActiveFilter("all");
     fetchMatches();
   };
+
+  // ⭐ Get display list based on active filter
+  const getDisplayList = () => {
+    if (activeFilter === "friends") {
+      return filteredFriends;
+    } else if (activeFilter === "verified") {
+      return filteredMatches.filter((m) => m.verified);
+    } else {
+      return filteredMatches;
+    }
+  };
+
+  const displayList = getDisplayList();
 
   // Loading state
   if (loading) {
@@ -226,15 +285,14 @@ const handleShowInterest = async (matchId) => {
                 All Matches
                 <span className="tab-count">{matches.length}</span>
               </button>
+              {/* ⭐ CHANGED: Online Now → Friends */}
               <button
-                className={`filter-tab ${activeFilter === "online" ? "active" : ""}`}
-                onClick={() => setActiveFilter("online")}
+                className={`filter-tab ${activeFilter === "friends" ? "active" : ""}`}
+                onClick={() => setActiveFilter("friends")}
               >
-                <span className="tab-icon">🟢</span>
-                Online Now
-                <span className="tab-count">
-                  {matches.filter((m) => m.online).length}
-                </span>
+                <span className="tab-icon">💝</span>
+                Friends
+                <span className="tab-count">{friends.length}</span>
               </button>
               <button
                 className={`filter-tab ${activeFilter === "verified" ? "active" : ""}`}
@@ -258,7 +316,7 @@ const handleShowInterest = async (matchId) => {
           </div>
 
           {/* Advanced Filters */}
-          {showFilters && (
+          {showFilters && activeFilter !== "friends" && (
             <div className="advanced-filters">
               <div className="filters-grid">
                 <div className="filter-group">
@@ -367,15 +425,15 @@ const handleShowInterest = async (matchId) => {
         {/* Results Info */}
         <div className={`results-info ${isVisible ? "visible" : ""}`}>
           <p>
-            Showing <strong>{filteredMatches.length}</strong> matches based on
-            your preferences
+            Showing <strong>{displayList.length}</strong>{" "}
+            {activeFilter === "friends" ? "friends" : "matches"}
           </p>
         </div>
 
         {/* Matches Grid */}
         <div className={`matches-grid ${isVisible ? "visible" : ""}`}>
-          {filteredMatches.length > 0 ? (
-            filteredMatches.map((match, index) => (
+          {displayList.length > 0 ? (
+            displayList.map((match, index) => (
               <div
                 key={match.id}
                 className="match-card"
@@ -388,11 +446,14 @@ const handleShowInterest = async (matchId) => {
                     alt={match.name}
                     className="match-image"
                   />
-                  {match.online && <div className="online-badge">Online</div>}
                   {match.verified && (
                     <div className="verified-badge" title="Verified Profile">
                       ✓
                     </div>
+                  )}
+                  {/* ⭐ Show friend badge for friends */}
+                  {activeFilter === "friends" && (
+                    <div className="friend-badge">Friend 💝</div>
                   )}
                 </div>
 
@@ -449,12 +510,30 @@ const handleShowInterest = async (matchId) => {
                     >
                       ⭐
                     </button>
-                    <button
-                      className="btn-interest"
-                      onClick={() => handleShowInterest(match.id)}
-                    >
-                      💝 Send Interest
-                    </button>
+                    
+                    {/* ⭐ CHANGED: Show different button based on status */}
+                    {activeFilter === "friends" ? (
+                      // Friends: Show "Message" button
+                      <button
+                        className="btn-message"
+                        onClick={() => handleMessageFriend(match.matchId)}
+                      >
+                        💬 Message
+                      </button>
+                    ) : match.interestSent || match.status === "pending" ? (
+                      // Pending: Show "Pending" button
+                      <button className="btn-pending" disabled>
+                        ⏳ Pending
+                      </button>
+                    ) : (
+                      // Not sent: Show "Send Interest" button
+                      <button
+                        className="btn-interest"
+                        onClick={() => handleShowInterest(match.id)}
+                      >
+                        💝 Send Interest
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -462,11 +541,21 @@ const handleShowInterest = async (matchId) => {
           ) : (
             <div className="no-matches">
               <div className="no-matches-icon">😔</div>
-              <h3>No matches found</h3>
-              <p>Try adjusting your filters to see more profiles</p>
-              <button className="btn-reset" onClick={resetFilters}>
-                Reset Filters
-              </button>
+              <h3>
+                {activeFilter === "friends"
+                  ? "No friends yet"
+                  : "No matches found"}
+              </h3>
+              <p>
+                {activeFilter === "friends"
+                  ? "Start sending interests to make friends!"
+                  : "Try adjusting your filters to see more profiles"}
+              </p>
+              {activeFilter !== "friends" && (
+                <button className="btn-reset" onClick={resetFilters}>
+                  Reset Filters
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -489,9 +578,6 @@ const handleShowInterest = async (matchId) => {
                 <div className="modal-header-section">
                   <div className="modal-image-container">
                     <img src={selectedMatch.image} alt={selectedMatch.name} />
-                    {selectedMatch.online && (
-                      <div className="online-badge large">Online</div>
-                    )}
                   </div>
 
                   <div className="modal-header-info">
@@ -567,12 +653,27 @@ const handleShowInterest = async (matchId) => {
                   >
                     ⭐ Shortlist
                   </button>
-                  <button
-                    className="btn-modal-interest"
-                    onClick={() => handleShowInterest(selectedMatch.id)}
-                  >
-                    💝 Send Interest
-                  </button>
+                  
+                  {/* ⭐ Modal actions based on status */}
+                  {activeFilter === "friends" ? (
+                    <button
+                      className="btn-modal-message"
+                      onClick={() => handleMessageFriend(selectedMatch.matchId)}
+                    >
+                      💬 Message
+                    </button>
+                  ) : selectedMatch.interestSent || selectedMatch.status === "pending" ? (
+                    <button className="btn-modal-pending" disabled>
+                      ⏳ Pending
+                    </button>
+                  ) : (
+                    <button
+                      className="btn-modal-interest"
+                      onClick={() => handleShowInterest(selectedMatch.id)}
+                    >
+                      💝 Send Interest
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
