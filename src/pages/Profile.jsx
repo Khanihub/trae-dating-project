@@ -49,7 +49,7 @@ function Profile() {
   // Function to get default profile image based on gender
   const getDefaultImage = () => {
     if (formData.gender === "male") {
-      return "/assets/ Pic.png"; // Aapki male default image ka path
+      return "/assets/Male Pic.png"; // Aapki male default image ka path
     } else if (formData.gender === "female") {
       return "/assets/Female pic.png"; // Aapki female default image ka path
     }
