@@ -61,7 +61,7 @@ function Dashboard() {
           </Link>
 
 
-          <Link to="/settings" className={`card group ${isVisible ? 'visible' : ''} delay-4`}>
+          <Link to="/settings" className={`card group ${isVisible ? 'visible' : ''} delay-4`} style={{ textDecoration: "none" }}>
             <div className="card-icon profile-icon">
               <FaCog />
 
