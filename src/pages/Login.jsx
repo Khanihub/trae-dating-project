@@ -35,48 +35,53 @@ function Login() {
   }
 
   const handleSubmit = async (e) => {
-  e.preventDefault()
-  setError('')
-  setSuccess('')
+    e.preventDefault()
+    setError('')
+    setSuccess('')
 
-  if (!validateForm()) return
-  setLoading(true)
+    if (!validateForm()) return
+    setLoading(true)
 
-  try {
-    const res = await axios.post(import.meta.env.VITE_API_LOGIN, formData)
-
-    localStorage.setItem('token', res.data.token)
-    localStorage.setItem('role', res.data.user.role)   // 🔥 role save
-
-    setSuccess('Login successful!')
-
-    // 🔁 Role based redirection
-    if (res.data.user.role === "admin") {
-      setTimeout(() => navigate('/admin'), 1200)
-      return
-    }
-
-    // Normal user flow
     try {
-      const profileRes = await axios.get(
-        `${import.meta.env.VITE_API}/profile/me`,
-        { headers: { Authorization: `Bearer ${res.data.token}` } }
+      // 🔑 Add proper headers
+      const res = await axios.post(
+        import.meta.env.VITE_API_LOGIN,
+        formData,
+        { headers: { "Content-Type": "application/json" }, withCredentials: true }
       )
 
-      if (profileRes.data) {
-        setTimeout(() => navigate('/dashboard'), 1200)
+      // Save token & role
+      localStorage.setItem('token', res.data.token)
+      localStorage.setItem('role', res.data.user.role)
+
+      setSuccess('Login successful!')
+
+      // Role-based redirect
+      if (res.data.user.role === 'admin') {
+        setTimeout(() => navigate('/admin'), 1200)
+        return
       }
-    } catch (profileErr) {
-      setTimeout(() => navigate('/profile'), 1200)
+
+      // Normal user flow
+      try {
+        const profileRes = await axios.get(
+          `${import.meta.env.VITE_API}/profile/me`,
+          { headers: { Authorization: `Bearer ${res.data.token}` } }
+        )
+        if (profileRes.data) {
+          setTimeout(() => navigate('/dashboard'), 1200)
+        }
+      } catch (profileErr) {
+        setTimeout(() => navigate('/profile'), 1200)
+      }
+
+    } catch (err) {
+      console.error('Login error:', err.response?.data || err.message)
+      setError(err.response?.data?.message || 'Invalid credentials. Please try again.')
+    } finally {
+      setLoading(false)
     }
-
-  } catch (err) {
-    setError(err.response?.data?.message || 'Invalid credentials. Please try again.')
-  } finally {
-    setLoading(false)
   }
-}
-
 
   return (
     <div className="login-page">
@@ -84,9 +89,7 @@ function Login() {
         <div className="login-card">
           <div className="login-header">
             <h2>Welcome Back</h2>
-            <p>
-              Sign in or <Link to="/register">create an account</Link>
-            </p>
+            <p>Sign in or <Link to="/register">create an account</Link></p>
           </div>
 
           {error && <div className="alert error">{error}</div>}
@@ -123,6 +126,7 @@ function Login() {
           </form>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
